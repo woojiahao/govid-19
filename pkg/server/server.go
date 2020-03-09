@@ -10,8 +10,8 @@ import (
 )
 
 func loadData() {
-  if _, err := os.Stat(data.Path); os.IsNotExist(err) {
-    tmp := os.Mkdir(data.Path, 0755)
+  if _, err := os.Stat(data.Root.AsString()); os.IsNotExist(err) {
+    tmp := os.Mkdir(data.Root.AsString(), 0755)
     Check(tmp)
 
     data.Load()

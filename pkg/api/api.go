@@ -13,7 +13,7 @@ func ping(c *gin.Context) {
 }
 
 func all(c *gin.Context) {
-  data.Load()
+  data.GetAll()
 }
 
 func Build(engine *gin.Engine) {
