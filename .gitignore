@@ -18,3 +18,4 @@ vendor/
 *.iml
 
 main
+tmp/
