@@ -1,0 +1,9 @@
+version: "3.7"
+services:
+  api: 
+    image: woojiahao/govid-19:latest
+    restart: on-failure
+    container_name: "api"
+    ports: 
+      - "8080:8080"
+    network_mode: "host"

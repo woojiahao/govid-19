@@ -7,6 +7,6 @@ WORKDIR /app
 COPY . .
 
 RUN go mod download
-RUN go build src/main.go
+RUN go build cmd/main.go
 
 CMD ./main
