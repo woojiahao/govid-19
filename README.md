@@ -6,3 +6,7 @@ Go API for retrieving Covid-19 statistics
 - `GET /ping` - test if server is running
 - `GET /latest` - retrieve the latest statistics
 - `GET /all` - retrieve all the statistics over the last few days
+
+## TODO
+- [ ] Auto-pull the repository every day
+- [ ] Deployment guide

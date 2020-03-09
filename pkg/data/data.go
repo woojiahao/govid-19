@@ -55,11 +55,7 @@ func Update() {
 }
 
 // Aggregate the values from the time series to create a grouping for the information.
-func GetAll() {
-  confirmed := GetTimeSeries(Confirmed)
-  for _, record := range confirmed {
-    if record.Province == "Hubei" {
-      fmt.Println(record)
-    }
-  }
+func GetAll() ([]TimeSeriesRecord, []TimeSeriesRecord, []TimeSeriesRecord) {
+  confirmed, deaths, recovered := GetTimeSeries(Confirmed), GetTimeSeries(Deaths), GetTimeSeries(Recovered)
+  return confirmed, deaths, recovered
 }

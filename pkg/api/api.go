@@ -8,12 +8,17 @@ import (
 
 func ping(c *gin.Context) {
   OK(c, gin.H{
-    "message": "pong",
+    "Message": "Pong",
   })
 }
 
 func all(c *gin.Context) {
-  data.GetAll()
+  confirmed, deaths, recovered := data.GetAll()
+  OK(c, gin.H{
+    "Confirmed": confirmed,
+    "Deaths":    deaths,
+    "Recovered": recovered,
+  })
 }
 
 func Build(engine *gin.Engine) {
