@@ -8,16 +8,16 @@ import (
 
 func ping(c *gin.Context) {
   OK(c, gin.H{
-    "Message": "Pong",
+    "message": "pong",
   })
 }
 
 func all(c *gin.Context) {
   confirmed, deaths, recovered := data.GetAll()
   OK(c, gin.H{
-    "Confirmed": confirmed,
-    "Deaths":    deaths,
-    "Recovered": recovered,
+    "confirmed": confirmed,
+    "deaths":    deaths,
+    "recovered": recovered,
   })
 }
 

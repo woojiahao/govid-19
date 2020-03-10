@@ -18,12 +18,12 @@ const (
 
 // Single row in the time series.
 type TimeSeriesRecord struct {
-  TimeSeriesType TimeSeriesType
-  Province       string
-  Country        string
-  Longitude      float32
-  Latitude       float32
-  Data           map[string]int
+  TimeSeriesType TimeSeriesType `json:"-"`
+  Province       string         `json:"province"`
+  Country        string         `json:"country"`
+  Longitude      float32        `json:"long"`
+  Latitude       float32        `json:"lat"`
+  Data           map[string]int `json:"data"`
 }
 
 var timeSeriesPaths = map[TimeSeriesType]RepoPath{
