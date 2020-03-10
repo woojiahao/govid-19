@@ -16,23 +16,50 @@ const (
   Recovered TimeSeriesType = "Recovered"
 )
 
-// Single row in the time series.
-type TimeSeriesRecord struct {
-  TimeSeriesType TimeSeriesType `json:"-"`
-  Province       string         `json:"province"`
-  Country        string         `json:"country"`
-  Longitude      float32        `json:"long"`
-  Latitude       float32        `json:"lat"`
-  Data           map[string]int `json:"data"`
-}
-
 var timeSeriesPaths = map[TimeSeriesType]RepoPath{
   Confirmed: ConfirmedTimeSeries,
   Deaths:    DeathsTimeSeries,
   Recovered: RecoveredTimeSeries,
 }
 
-func GetTimeSeries(seriesType TimeSeriesType) []TimeSeriesRecord {
+// Single row in the time series.
+type TimeSeriesRecord struct {
+  TimeSeriesType TimeSeriesType `json:"-"`
+  State          string         `json:"state"`
+  Country        string         `json:"country"`
+  Longitude      float32        `json:"long"`
+  Latitude       float32        `json:"lat"`
+  Data           map[string]int `json:"data"`
+}
+
+type Series struct {
+  TimeSeriesType TimeSeriesType
+  Records        []TimeSeriesRecord
+}
+
+func (s *Series) GetCountry(country string) TimeSeriesRecord {
+  for _, record := range s.Records {
+    // TODO Allow fuzzy searching
+    if record.Country == country {
+      return record
+    }
+  }
+
+  return TimeSeriesRecord{}
+}
+
+func (s *Series) GetState(state string) TimeSeriesRecord {
+  for _, record := range s.Records {
+    // TODO Allow fuzzy searching
+    if record.State == state {
+      return record
+    }
+  }
+
+  return TimeSeriesRecord{}
+}
+
+func GetTimeSeries(seriesType TimeSeriesType) Series {
   file, err := os.Open(timeSeriesPaths[seriesType].AsString())
   Check(err)
 
@@ -57,7 +84,7 @@ func GetTimeSeries(seriesType TimeSeriesType) []TimeSeriesRecord {
       }
       timeSeriesRecord := TimeSeriesRecord{
         TimeSeriesType: seriesType,
-        Province:       record[0],
+        State:          record[0],
         Country:        record[1],
         Longitude:      ToFloat32(record[2]),
         Latitude:       ToFloat32(record[3]),
@@ -68,5 +95,8 @@ func GetTimeSeries(seriesType TimeSeriesType) []TimeSeriesRecord {
     Check(err)
   }
 
-  return records
+  return Series{
+    TimeSeriesType: seriesType,
+    Records:        records,
+  }
 }

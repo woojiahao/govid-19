@@ -14,6 +14,13 @@ func ping(c *gin.Context) {
 
 func all(c *gin.Context) {
   confirmed, deaths, recovered := data.GetAll()
+
+  params := c.Request.URL.Query()
+  country, state := params.Get("country"), params.Get("state")
+  if country != "" {
+
+  }
+
   OK(c, gin.H{
     "confirmed": confirmed,
     "deaths":    deaths,
