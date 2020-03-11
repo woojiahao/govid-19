@@ -27,7 +27,5 @@ func Start() {
   api.Build(r)
   err := r.Run()
   fmt.Println("Server started.")
-  if err != nil {
-    panic(err)
-  }
+  Check(err)
 }

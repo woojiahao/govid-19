@@ -5,6 +5,8 @@ import (
   . "github.com/woojiahao/govid-19/pkg/utility"
   "io"
   "os"
+  "sort"
+  "strings"
 )
 
 type TimeSeriesType string
@@ -22,41 +24,112 @@ var timeSeriesPaths = map[TimeSeriesType]RepoPath{
   Recovered: RecoveredTimeSeries,
 }
 
+type TimeSeriesRecordData struct {
+  Date  string `json:"date"`
+  Value int    `json:"value"`
+}
+
 // Single row in the time series.
 type TimeSeriesRecord struct {
-  TimeSeriesType TimeSeriesType `json:"-"`
-  State          string         `json:"state"`
-  Country        string         `json:"country"`
-  Longitude      float32        `json:"long"`
-  Latitude       float32        `json:"lat"`
-  Data           map[string]int `json:"data"`
+  TimeSeriesType TimeSeriesType         `json:"-"`
+  State          string                 `json:"state"`
+  Country        string                 `json:"country"`
+  Longitude      float32                `json:"long"`
+  Latitude       float32                `json:"lat"`
+  Data           []TimeSeriesRecordData `json:"data"`
+}
+
+// Returns the sum of data for a record.
+func (r *TimeSeriesRecord) SumData() int {
+  sum := 0
+  for _, data := range r.Data {
+    sum += data.Value
+  }
+  return sum
 }
 
 type Series struct {
-  TimeSeriesType TimeSeriesType
-  Records        []TimeSeriesRecord
+  TimeSeriesType TimeSeriesType     `json:"-"`
+  Records        []TimeSeriesRecord `json:"records"`
 }
 
-func (s *Series) GetCountry(country string) TimeSeriesRecord {
+func (s *Series) Clone(newRecords []TimeSeriesRecord) Series {
+  return Series{
+    TimeSeriesType: s.TimeSeriesType,
+    Records:        newRecords,
+  }
+}
+
+func (s *Series) GetByCountry(country string) Series {
+  results := make([]TimeSeriesRecord, 0)
   for _, record := range s.Records {
-    // TODO Allow fuzzy searching
-    if record.Country == country {
-      return record
+    if strings.Contains(record.Country, country) {
+      results = append(results, record)
     }
   }
 
-  return TimeSeriesRecord{}
+  return s.Clone(results)
 }
 
-func (s *Series) GetState(state string) TimeSeriesRecord {
+func (s *Series) GetByState(state string) Series {
+  results := make([]TimeSeriesRecord, 0)
   for _, record := range s.Records {
-    // TODO Allow fuzzy searching
-    if record.State == state {
-      return record
+    if strings.Contains(record.State, state) {
+      results = append(results, record)
     }
   }
 
-  return TimeSeriesRecord{}
+  return s.Clone(results)
+}
+
+// This operation sorts the data for each record in descending order.
+func (s Series) SortDataInDescending() Series {
+  for _, record := range s.Records {
+    sort.Slice(record.Data, func(i, j int) bool {
+      return record.Data[i].Value > record.Data[j].Value
+    })
+  }
+  return s
+}
+
+// This operation sorts the records in descending order of the total values.
+func (s Series) SortRecordsInDescending() Series {
+  sort.Slice(s.Records, func(i, j int) bool {
+    return s.Records[i].SumData() > s.Records[j].SumData()
+  })
+  return s
+}
+
+// Retrieves the first [num] (inclusive) of records in the series
+func (s Series) First(num int) Series {
+  return s.Clone(s.Records[:num+1])
+}
+
+// Retrieves the last [num] (inclusive) of records in the series
+func (s Series) Last(num int) Series {
+  return s.Clone(s.Records[len(s.Records)-num-1:])
+}
+
+type AllSeries struct {
+  confirmed Series
+  deaths    Series
+  recovered Series
+}
+
+func (as *AllSeries) ToJSON() map[string]interface{} {
+  return map[string]interface{}{
+    "confirmed": as.confirmed,
+    "deaths":    as.deaths,
+    "recovered": as.recovered,
+  }
+}
+
+func NewAllSeries(confirmed, deaths, recovered Series) AllSeries {
+  return AllSeries{
+    confirmed: confirmed,
+    deaths:    deaths,
+    recovered: recovered,
+  }
 }
 
 func GetTimeSeries(seriesType TimeSeriesType) Series {
@@ -78,9 +151,12 @@ func GetTimeSeries(seriesType TimeSeriesType) Series {
         headers = append(headers, header)
       }
     } else {
-      rawData, timeHeaders, data := record[4:], headers[4:], make(map[string]int)
+      rawData, timeHeaders, data := record[4:], headers[4:], make([]TimeSeriesRecordData, 0)
       for i, d := range rawData {
-        data[timeHeaders[i]] = ToInt(d)
+        data = append(data, TimeSeriesRecordData{
+          Date:  timeHeaders[i],
+          Value: ToInt(d),
+        })
       }
       timeSeriesRecord := TimeSeriesRecord{
         TimeSeriesType: seriesType,

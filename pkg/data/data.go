@@ -55,7 +55,7 @@ func Update() {
 }
 
 // Aggregate the values from the time series to create a grouping for the information.
-func GetAll() ([]TimeSeriesRecord, []TimeSeriesRecord, []TimeSeriesRecord) {
+func GetAll() (Series, Series, Series) {
   confirmed, deaths, recovered := GetTimeSeries(Confirmed), GetTimeSeries(Deaths), GetTimeSeries(Recovered)
   return confirmed, deaths, recovered
 }

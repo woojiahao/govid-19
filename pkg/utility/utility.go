@@ -15,6 +15,9 @@ func ToFloat32(s string) float32 {
 }
 
 func ToInt(s string) int {
+  if s == "" {
+    return 0
+  }
   f, err := strconv.ParseInt(s, 10, 64)
   Check(err)
   return int(f)
