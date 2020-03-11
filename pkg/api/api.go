@@ -27,6 +27,8 @@ func ping(c *gin.Context) {
 }
 
 // TODO Test for case sensitivity in the query parameters
+// TODO Check bug - sort-data + first will return two JSON objects
+// TODO Add the sum of the data returned
 func all(c *gin.Context) {
   confirmed, deaths, recovered := data.GetAll()
   defer func() {
@@ -94,6 +96,7 @@ func all(c *gin.Context) {
   }
 }
 
+// TODO Move somewhere else
 func checkSortOrder(raw string) (order data.SortOrder, status bool, errMsg string) {
   // TODO Better way to check against the constants
   switch raw {
@@ -109,6 +112,7 @@ func checkSortOrder(raw string) (order data.SortOrder, status bool, errMsg strin
   return
 }
 
+// TODO Move somewhere else
 func checkInt(prop string, min, max int) (num int, status bool, errMsg string) {
   f, err := strconv.ParseInt(prop, 10, 64)
   if err != nil {
