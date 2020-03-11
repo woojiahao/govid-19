@@ -26,6 +26,7 @@ func ping(c *gin.Context) {
   })
 }
 
+// TODO Test for case sensitivity in the query parameters
 func all(c *gin.Context) {
   confirmed, deaths, recovered := data.GetAll()
   defer func() {
@@ -34,10 +35,12 @@ func all(c *gin.Context) {
   }()
 
   params := c.Request.URL.Query()
-  country, state, first, last := params.Get("country"),
+  country, state, first, last, sortData, sortRecords := params.Get("country"),
     params.Get("state"),
     params.Get("first"),
-    params.Get("last")
+    params.Get("last"),
+    params.Get("sort-data"),
+    params.Get("sort-records")
 
   if country != "" {
     confirmed, deaths, recovered = confirmed.GetByCountry(country),
@@ -49,6 +52,27 @@ func all(c *gin.Context) {
     confirmed, deaths, recovered = confirmed.GetByState(state),
       deaths.GetByState(state),
       recovered.GetByState(state)
+  }
+
+  // TODO Experiment with passing the sorting function as a lambda/function argument to clean up the code
+  if sortData != "" {
+    order, status, errMsg := checkSortOrder(sortData)
+    if !status {
+      BadRequest(c, errMsg)
+    }
+    confirmed, deaths, recovered = confirmed.SortData(order),
+      deaths.SortData(order),
+      recovered.SortData(order)
+  }
+
+  if sortRecords != "" {
+    order, status, errMsg := checkSortOrder(sortRecords)
+    if !status {
+      BadRequest(c, errMsg)
+    }
+    confirmed, deaths, recovered = confirmed.SortRecords(order),
+      deaths.SortRecords(order),
+      recovered.SortRecords(order)
   }
 
   if first != "" {
@@ -68,6 +92,21 @@ func all(c *gin.Context) {
       deaths.Last(num),
       recovered.Last(num)
   }
+}
+
+func checkSortOrder(raw string) (order data.SortOrder, status bool, errMsg string) {
+  // TODO Better way to check against the constants
+  switch raw {
+  case "asc":
+    order = data.Ascending
+  case "desc":
+    order = data.Descending
+  default:
+    order = ""
+    status = false
+    errMsg = "Invalid sort order. Available values are [ asc, desc ]"
+  }
+  return
 }
 
 func checkInt(prop string, min, max int) (num int, status bool, errMsg string) {

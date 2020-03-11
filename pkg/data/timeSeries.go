@@ -11,11 +11,18 @@ import (
 
 type TimeSeriesType string
 
+type SortOrder string
+
 // Type of time series row.
 const (
   Confirmed TimeSeriesType = "Confirmed"
   Deaths    TimeSeriesType = "Deaths"
   Recovered TimeSeriesType = "Recovered"
+)
+
+const (
+  Ascending  SortOrder = "asc"
+  Descending SortOrder = "desc"
 )
 
 var timeSeriesPaths = map[TimeSeriesType]RepoPath{
@@ -60,6 +67,7 @@ func (s *Series) Clone(newRecords []TimeSeriesRecord) Series {
   }
 }
 
+// TODO Case sensitive requests
 func (s *Series) GetByCountry(country string) Series {
   results := make([]TimeSeriesRecord, 0)
   for _, record := range s.Records {
@@ -71,6 +79,7 @@ func (s *Series) GetByCountry(country string) Series {
   return s.Clone(results)
 }
 
+// TODO Case sensitive requests
 func (s *Series) GetByState(state string) Series {
   results := make([]TimeSeriesRecord, 0)
   for _, record := range s.Records {
@@ -82,20 +91,32 @@ func (s *Series) GetByState(state string) Series {
   return s.Clone(results)
 }
 
-// This operation sorts the data for each record in descending order.
-func (s Series) SortDataInDescending() Series {
+func (s Series) SortData(order SortOrder) Series {
   for _, record := range s.Records {
     sort.Slice(record.Data, func(i, j int) bool {
-      return record.Data[i].Value > record.Data[j].Value
+      switch order {
+      case Ascending:
+        return record.Data[i].Value < record.Data[j].Value
+      case Descending:
+        return record.Data[i].Value > record.Data[j].Value
+      default:
+        panic("invalid sort order")
+      }
     })
   }
   return s
 }
 
-// This operation sorts the records in descending order of the total values.
-func (s Series) SortRecordsInDescending() Series {
+func (s Series) SortRecords(order SortOrder) Series {
   sort.Slice(s.Records, func(i, j int) bool {
-    return s.Records[i].SumData() > s.Records[j].SumData()
+    switch order {
+    case Ascending:
+      return s.Records[i].SumData() < s.Records[j].SumData()
+    case Descending:
+      return s.Records[i].SumData() > s.Records[j].SumData()
+    default:
+      panic("invalid sort order")
+    }
   })
   return s
 }
