@@ -11,6 +11,7 @@ import (
 
 type TimeSeriesType string
 
+// TODO Attach check function here
 type SortOrder string
 
 // Type of time series row.
@@ -91,7 +92,7 @@ func (s *Series) GetByState(state string) Series {
   return s.Clone(results)
 }
 
-func (s Series) SortData(order SortOrder) Series {
+func (s Series) SortRecords(order SortOrder) Series {
   for _, record := range s.Records {
     sort.Slice(record.Data, func(i, j int) bool {
       switch order {
@@ -107,7 +108,7 @@ func (s Series) SortData(order SortOrder) Series {
   return s
 }
 
-func (s Series) SortRecords(order SortOrder) Series {
+func (s Series) SortData(order SortOrder) Series {
   sort.Slice(s.Records, func(i, j int) bool {
     switch order {
     case Ascending:
@@ -121,9 +122,9 @@ func (s Series) SortRecords(order SortOrder) Series {
   return s
 }
 
-// Retrieves the first [num] (inclusive) of records in the series
+// Retrieves the first [num] (exclusive) of records in the series
 func (s Series) First(num int) Series {
-  return s.Clone(s.Records[:num+1])
+  return s.Clone(s.Records[:num])
 }
 
 // Retrieves the last [num] (inclusive) of records in the series

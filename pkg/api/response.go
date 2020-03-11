@@ -19,10 +19,19 @@ func NewError(status int, message string) Error {
   }
 }
 
+func (e *Error) toJSON() map[string]interface{} {
+  return gin.H{
+    "status": e.status,
+    "message": e.message,
+    "timestamp": e.timestamp,
+  }
+}
+
 func OK(c *gin.Context, obj interface{}) {
   c.JSON(200, obj)
 }
 
 func BadRequest(c *gin.Context, msg string) {
-  c.JSON(400, NewError(400, msg))
+  error := NewError(400, msg)
+  c.JSON(400, error.toJSON())
 }
