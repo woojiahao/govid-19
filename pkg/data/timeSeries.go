@@ -44,6 +44,7 @@ type TimeSeriesRecord struct {
   Country        string                 `json:"country"`
   Longitude      float32                `json:"long"`
   Latitude       float32                `json:"lat"`
+  Total          int                    `json:"total"`
   Data           []TimeSeriesRecordData `json:"data"`
 }
 
@@ -108,13 +109,14 @@ func (s Series) SortRecords(order SortOrder) Series {
   return s
 }
 
+// The data is accumulative, which means that we don't need this
 func (s Series) SortData(order SortOrder) Series {
   sort.Slice(s.Records, func(i, j int) bool {
     switch order {
     case Ascending:
-      return s.Records[i].SumData() < s.Records[j].SumData()
+      return s.Records[i].Total < s.Records[j].Total
     case Descending:
-      return s.Records[i].SumData() > s.Records[j].SumData()
+      return s.Records[i].Total > s.Records[j].Total
     default:
       panic("invalid sort order")
     }
@@ -140,9 +142,9 @@ type AllSeries struct {
 
 func (as *AllSeries) ToJSON() map[string]interface{} {
   return map[string]interface{}{
-    "confirmed": as.confirmed,
-    "deaths":    as.deaths,
-    "recovered": as.recovered,
+    "confirmed": as.confirmed.Records,
+    "deaths":    as.deaths.Records,
+    "recovered": as.recovered.Records,
   }
 }
 
@@ -188,6 +190,7 @@ func GetTimeSeries(seriesType TimeSeriesType) Series {
         Latitude:       ToFloat32(record[3]),
         Data:           data,
       }
+      timeSeriesRecord.Total = timeSeriesRecord.SumData()
       records = append(records, timeSeriesRecord)
     }
     Check(err)

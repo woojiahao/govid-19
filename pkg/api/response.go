@@ -11,8 +11,8 @@ type Error struct {
   timestamp int64
 }
 
-func NewError(status int, message string) Error {
-  return Error{
+func NewError(status int, message string) *Error {
+  return &Error{
     status:    status,
     message:   message,
     timestamp: time.Now().Unix(),
@@ -32,6 +32,5 @@ func OK(c *gin.Context, obj interface{}) {
 }
 
 func BadRequest(c *gin.Context, msg string) {
-  error := NewError(400, msg)
-  c.JSON(400, error.toJSON())
+  c.JSON(400, NewError(400, msg).toJSON())
 }
