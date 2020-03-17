@@ -4,7 +4,7 @@ import (
   "fmt"
   "github.com/gin-gonic/gin"
   "github.com/woojiahao/govid-19/pkg/data"
-  "strconv"
+  . "github.com/woojiahao/govid-19/pkg/utility"
 )
 
 var endpoints = []Endpoint{
@@ -75,7 +75,7 @@ func all(c *gin.Context) {
   }
 
   if first != "" {
-    num, status, errMsg := checkInt(first, "first", 0, len(confirmed.Records))
+    num, status, errMsg := CheckInt(first, "first", 0, len(confirmed.Records))
     if !status {
       BadRequest(c, errMsg)
       return
@@ -84,7 +84,7 @@ func all(c *gin.Context) {
       deaths.First(num),
       recovered.First(num)
   } else if last != "" {
-    num, status, errMsg := checkInt(last, "last", 0, len(confirmed.Records))
+    num, status, errMsg := CheckInt(last, "last", 0, len(confirmed.Records))
     if !status {
       BadRequest(c, errMsg)
       return
@@ -113,34 +113,6 @@ func checkSortOrder(raw string) (order data.SortOrder, status bool, errMsg strin
     status = false
     errMsg = "Invalid sort order. Available values are [ asc, desc ]"
   }
-  return
-}
-
-// TODO Move somewhere else
-func checkInt(value, prop string, min, max int) (num int, status bool, errMsg string) {
-  f, err := strconv.ParseInt(value, 10, 64)
-  if err != nil {
-    status = false
-    errMsg = fmt.Sprintf("Invalid input for '%s'. Must be int.", prop)
-    return
-  }
-
-  num = int(f)
-
-  if num < min {
-    status = false
-    errMsg = fmt.Sprintf("Invalid input for '%s'. Must be greater than %d", prop, min)
-    return
-  }
-
-  if num > max {
-    status = false
-    errMsg = fmt.Sprintf("Invalid input for '%s'. Must be less than %d", prop, max)
-    return
-  }
-
-  status = true
-
   return
 }
 
