@@ -11,19 +11,12 @@ import (
 
 type TimeSeriesType string
 
-// TODO Attach check function here
-type SortOrder string
 
 // Type of time series row.
 const (
   Confirmed TimeSeriesType = "Confirmed"
   Deaths    TimeSeriesType = "Deaths"
   Recovered TimeSeriesType = "Recovered"
-)
-
-const (
-  Ascending  SortOrder = "asc"
-  Descending SortOrder = "desc"
 )
 
 var timeSeriesPaths = map[TimeSeriesType]RepoPath{
@@ -109,7 +102,7 @@ func (s Series) SortRecords(order SortOrder) Series {
   return s
 }
 
-// The data is accumulative, which means that we don't need this
+// TODO The data is accumulative, which means that we don't need this
 func (s Series) SortData(order SortOrder) Series {
   sort.Slice(s.Records, func(i, j int) bool {
     switch order {
@@ -148,8 +141,8 @@ func (as *AllSeries) ToJSON() map[string]interface{} {
   }
 }
 
-func NewAllSeries(confirmed, deaths, recovered Series) AllSeries {
-  return AllSeries{
+func NewAllSeries(confirmed, deaths, recovered Series) *AllSeries {
+  return &AllSeries{
     confirmed: confirmed,
     deaths:    deaths,
     recovered: recovered,
