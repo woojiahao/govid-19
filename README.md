@@ -11,5 +11,5 @@ Go API for retrieving Covid-19 statistics
 ## TODO
 
 - [ ] Auto-pull the repository every day
-- [ ] Compute the overall changes of the data
+- [ ] Compute the overall changes of the data since the data is accumulative now
 - [ ] Deployment guide
