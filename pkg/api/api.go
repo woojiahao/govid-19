@@ -53,7 +53,7 @@ func all(c *gin.Context) {
 
   // TODO Experiment with passing the sorting function as a lambda/function argument to clean up the code
   if sortData != "" {
-    order, status, errMsg := checkSortOrder(sortData)
+    order, status, errMsg := data.CheckSortOrder(sortData)
     if !status {
       BadRequest(c, errMsg)
       return
@@ -64,7 +64,7 @@ func all(c *gin.Context) {
   }
 
   if sortRecords != "" {
-    order, status, errMsg := checkSortOrder(sortRecords)
+    order, status, errMsg := data.CheckSortOrder(sortRecords)
     if !status {
       BadRequest(c, errMsg)
       return
@@ -96,24 +96,6 @@ func all(c *gin.Context) {
 
   allSeries := data.NewAllSeries(confirmed, deaths, recovered)
   OK(c, allSeries.ToJSON())
-}
-
-// TODO Move somewhere else
-func checkSortOrder(raw string) (order data.SortOrder, status bool, errMsg string) {
-  // TODO Better way to check against the constants
-  switch raw {
-  case "asc":
-    order = data.Ascending
-    status = true
-  case "desc":
-    order = data.Descending
-    status = true
-  default:
-    order = ""
-    status = false
-    errMsg = "Invalid sort order. Available values are [ asc, desc ]"
-  }
-  return
 }
 
 func Build(engine *gin.Engine) {
