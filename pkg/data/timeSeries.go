@@ -9,23 +9,6 @@ import (
   "strings"
 )
 
-type TimeSeriesType string
-
-// TODO Attach check function here
-type SortOrder string
-
-// Type of time series row.
-const (
-  Confirmed TimeSeriesType = "Confirmed"
-  Deaths    TimeSeriesType = "Deaths"
-  Recovered TimeSeriesType = "Recovered"
-)
-
-const (
-  Ascending  SortOrder = "asc"
-  Descending SortOrder = "desc"
-)
-
 var timeSeriesPaths = map[TimeSeriesType]RepoPath{
   Confirmed: ConfirmedTimeSeries,
   Deaths:    DeathsTimeSeries,
@@ -62,8 +45,8 @@ type Series struct {
   Records        []TimeSeriesRecord `json:"records"`
 }
 
-func (s *Series) Clone(newRecords []TimeSeriesRecord) Series {
-  return Series{
+func (s *Series) Clone(newRecords []TimeSeriesRecord) *Series {
+  return &Series{
     TimeSeriesType: s.TimeSeriesType,
     Records:        newRecords,
   }
@@ -78,7 +61,7 @@ func (s *Series) GetByCountry(country string) Series {
     }
   }
 
-  return s.Clone(results)
+  return *s.Clone(results)
 }
 
 // TODO Case sensitive requests
@@ -90,9 +73,10 @@ func (s *Series) GetByState(state string) Series {
     }
   }
 
-  return s.Clone(results)
+  return *s.Clone(results)
 }
 
+// Sorts results by the records
 func (s Series) SortRecords(order SortOrder) Series {
   for _, record := range s.Records {
     sort.Slice(record.Data, func(i, j int) bool {
@@ -109,7 +93,7 @@ func (s Series) SortRecords(order SortOrder) Series {
   return s
 }
 
-// The data is accumulative, which means that we don't need this
+// Sorts results by the total
 func (s Series) SortData(order SortOrder) Series {
   sort.Slice(s.Records, func(i, j int) bool {
     switch order {
@@ -126,34 +110,12 @@ func (s Series) SortData(order SortOrder) Series {
 
 // Retrieves the first [num] (exclusive) of records in the series
 func (s Series) First(num int) Series {
-  return s.Clone(s.Records[:num])
+  return *s.Clone(s.Records[:num])
 }
 
 // Retrieves the last [num] (inclusive) of records in the series
 func (s Series) Last(num int) Series {
-  return s.Clone(s.Records[len(s.Records)-num-1:])
-}
-
-type AllSeries struct {
-  confirmed Series
-  deaths    Series
-  recovered Series
-}
-
-func (as *AllSeries) ToJSON() map[string]interface{} {
-  return map[string]interface{}{
-    "confirmed": as.confirmed.Records,
-    "deaths":    as.deaths.Records,
-    "recovered": as.recovered.Records,
-  }
-}
-
-func NewAllSeries(confirmed, deaths, recovered Series) AllSeries {
-  return AllSeries{
-    confirmed: confirmed,
-    deaths:    deaths,
-    recovered: recovered,
-  }
+  return *s.Clone(s.Records[len(s.Records)-num-1:])
 }
 
 func GetTimeSeries(seriesType TimeSeriesType) Series {
@@ -177,9 +139,13 @@ func GetTimeSeries(seriesType TimeSeriesType) Series {
     } else {
       rawData, timeHeaders, data := record[4:], headers[4:], make([]TimeSeriesRecordData, 0)
       for i, d := range rawData {
+        prev := 0
+        if i != 0 {
+          prev = ToInt(rawData[i-1])
+        }
         data = append(data, TimeSeriesRecordData{
           Date:  timeHeaders[i],
-          Value: ToInt(d),
+          Value: ToInt(d) - prev,
         })
       }
       timeSeriesRecord := TimeSeriesRecord{
@@ -188,9 +154,9 @@ func GetTimeSeries(seriesType TimeSeriesType) Series {
         Country:        record[1],
         Longitude:      ToFloat32(record[2]),
         Latitude:       ToFloat32(record[3]),
+        Total:          ToInt(rawData[len(rawData)-1]),
         Data:           data,
       }
-      timeSeriesRecord.Total = timeSeriesRecord.SumData()
       records = append(records, timeSeriesRecord)
     }
     Check(err)

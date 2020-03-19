@@ -1,6 +1,9 @@
 package utility
 
-import "strconv"
+import (
+  "fmt"
+  "strconv"
+)
 
 func Check(e error) {
   if e != nil {
@@ -21,4 +24,31 @@ func ToInt(s string) int {
   f, err := strconv.ParseInt(s, 10, 64)
   Check(err)
   return int(f)
+}
+
+func CheckInt(value, prop string, min, max int) (num int, status bool, errMsg string) {
+  f, err := strconv.ParseInt(value, 10, 64)
+  if err != nil {
+    status = false
+    errMsg = fmt.Sprintf("Invalid input for '%s'. Must be int.", prop)
+    return
+  }
+
+  num = int(f)
+
+  if num < min {
+    status = false
+    errMsg = fmt.Sprintf("Invalid input for '%s'. Must be greater than %d", prop, min)
+    return
+  }
+
+  if num > max {
+    status = false
+    errMsg = fmt.Sprintf("Invalid input for '%s'. Must be less than %d", prop, max)
+    return
+  }
+
+  status = true
+
+  return
 }
