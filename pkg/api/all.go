@@ -38,9 +38,9 @@ func All(c *gin.Context) {
       BadRequest(c, errMsg)
       return
     }
-    confirmed, deaths, recovered = confirmed.SortRecords(order),
-      deaths.SortRecords(order),
-      recovered.SortRecords(order)
+    confirmed, deaths, recovered = confirmed.SortData(order),
+      deaths.SortData(order),
+      recovered.SortData(order)
   }
 
   if sortRecords != "" {
