@@ -16,12 +16,12 @@ Returns all statistics.
 
 #### Query parameters
 
-`country` -  case sensitive search for the country to return
-`state` - case sensitive search for the state to return
-`first` - get the first *n* number of records
-`last` - get the last *n* number of records
-`sort-data` - sort the results by the total value of each category
-`sort-records` - sort the data of the results
+- `country` -  case sensitive search for the country to return
+- `state` - case sensitive search for the state to return
+- `first` - get the first *n* number of records
+- `last` - get the last *n* number of records
+- `sort-data` - sort the results by the total value of each category
+- `sort-records` - sort the data of the results
 
 ## Deployment
 
