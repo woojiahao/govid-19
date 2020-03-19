@@ -138,9 +138,13 @@ func GetTimeSeries(seriesType TimeSeriesType) Series {
     } else {
       rawData, timeHeaders, data := record[4:], headers[4:], make([]TimeSeriesRecordData, 0)
       for i, d := range rawData {
+        prev := 0
+        if i != 0 {
+          prev = ToInt(rawData[i-1])
+        }
         data = append(data, TimeSeriesRecordData{
           Date:  timeHeaders[i],
-          Value: ToInt(d),
+          Value: ToInt(d) - prev,
         })
       }
       timeSeriesRecord := TimeSeriesRecord{
@@ -149,7 +153,7 @@ func GetTimeSeries(seriesType TimeSeriesType) Series {
         Country:        record[1],
         Longitude:      ToFloat32(record[2]),
         Latitude:       ToFloat32(record[3]),
-        Total:          data[len(data)-1].Value,
+        Total:          ToInt(rawData[len(rawData)-1]),
         Data:           data,
       }
       records = append(records, timeSeriesRecord)
