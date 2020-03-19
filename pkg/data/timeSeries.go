@@ -9,16 +9,6 @@ import (
   "strings"
 )
 
-type TimeSeriesType string
-
-
-// Type of time series row.
-const (
-  Confirmed TimeSeriesType = "Confirmed"
-  Deaths    TimeSeriesType = "Deaths"
-  Recovered TimeSeriesType = "Recovered"
-)
-
 var timeSeriesPaths = map[TimeSeriesType]RepoPath{
   Confirmed: ConfirmedTimeSeries,
   Deaths:    DeathsTimeSeries,
@@ -125,28 +115,6 @@ func (s Series) First(num int) Series {
 // Retrieves the last [num] (inclusive) of records in the series
 func (s Series) Last(num int) Series {
   return s.Clone(s.Records[len(s.Records)-num-1:])
-}
-
-type AllSeries struct {
-  confirmed Series
-  deaths    Series
-  recovered Series
-}
-
-func (as *AllSeries) ToJSON() map[string]interface{} {
-  return map[string]interface{}{
-    "confirmed": as.confirmed.Records,
-    "deaths":    as.deaths.Records,
-    "recovered": as.recovered.Records,
-  }
-}
-
-func NewAllSeries(confirmed, deaths, recovered Series) *AllSeries {
-  return &AllSeries{
-    confirmed: confirmed,
-    deaths:    deaths,
-    recovered: recovered,
-  }
 }
 
 func GetTimeSeries(seriesType TimeSeriesType) Series {
