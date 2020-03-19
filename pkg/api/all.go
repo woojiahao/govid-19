@@ -2,7 +2,6 @@ package api
 
 import (
   "github.com/gin-gonic/gin"
-  "github.com/woojiahao/govid-19/pkg/api"
   "github.com/woojiahao/govid-19/pkg/data"
   "github.com/woojiahao/govid-19/pkg/utility"
 )
@@ -36,7 +35,7 @@ func All(c *gin.Context) {
   if sortData != "" {
     order, status, errMsg := data.CheckSortOrder(sortData)
     if !status {
-      api.BadRequest(c, errMsg)
+      BadRequest(c, errMsg)
       return
     }
     confirmed, deaths, recovered = confirmed.SortRecords(order),
@@ -47,7 +46,7 @@ func All(c *gin.Context) {
   if sortRecords != "" {
     order, status, errMsg := data.CheckSortOrder(sortRecords)
     if !status {
-      api.BadRequest(c, errMsg)
+      BadRequest(c, errMsg)
       return
     }
     confirmed, deaths, recovered = confirmed.SortRecords(order),
@@ -58,7 +57,7 @@ func All(c *gin.Context) {
   if first != "" {
     num, status, errMsg := utility.CheckInt(first, "first", 0, len(confirmed.Records))
     if !status {
-      api.BadRequest(c, errMsg)
+      BadRequest(c, errMsg)
       return
     }
     confirmed, deaths, recovered = confirmed.First(num),
@@ -67,7 +66,7 @@ func All(c *gin.Context) {
   } else if last != "" {
     num, status, errMsg := utility.CheckInt(last, "last", 0, len(confirmed.Records))
     if !status {
-      api.BadRequest(c, errMsg)
+      BadRequest(c, errMsg)
       return
     }
     confirmed, deaths, recovered = confirmed.Last(num),
@@ -76,5 +75,5 @@ func All(c *gin.Context) {
   }
 
   allSeries := data.NewAllSeries(confirmed, deaths, recovered)
-  api.OK(c, allSeries.ToJSON())
+  OK(c, allSeries.ToJSON())
 }

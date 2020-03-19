@@ -3,19 +3,19 @@ package api
 import (
   "fmt"
   "github.com/gin-gonic/gin"
-  api "github.com/woojiahao/govid-19/pkg/api/action"
 )
 
+// TODO Add endpoint for getting the list of countries affected
 var endpoints = []Endpoint{
   {
     RequestType: GET,
     Path:        "/ping",
-    Action:      api.Ping,
+    Action:      Ping,
   },
   {
     RequestType: GET,
     Path:        "/all",
-    Action:      api.All,
+    Action:      All,
   },
 }
 

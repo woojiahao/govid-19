@@ -149,9 +149,9 @@ func GetTimeSeries(seriesType TimeSeriesType) Series {
         Country:        record[1],
         Longitude:      ToFloat32(record[2]),
         Latitude:       ToFloat32(record[3]),
+        Total:          data[len(data)-1].Value,
         Data:           data,
       }
-      timeSeriesRecord.Total = timeSeriesRecord.SumData()
       records = append(records, timeSeriesRecord)
     }
     Check(err)
