@@ -5,7 +5,6 @@ import (
   "github.com/gin-gonic/gin"
 )
 
-// TODO Add endpoint for getting the list of countries affected
 var endpoints = []Endpoint{
   {
     RequestType: GET,
@@ -16,6 +15,11 @@ var endpoints = []Endpoint{
     RequestType: GET,
     Path:        "/all",
     Action:      All,
+  },
+  {
+    RequestType: GET,
+    Path:        "/countries",
+    Action:      GetAvailableCountries,
   },
 }
 

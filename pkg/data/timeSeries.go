@@ -9,7 +9,7 @@ import (
   "strings"
 )
 
-var timeSeriesPaths = map[TimeSeriesType]RepoPath{
+var TimeSeriesPaths = map[TimeSeriesType]RepoPath{
   Confirmed: ConfirmedTimeSeries,
   Deaths:    DeathsTimeSeries,
   Recovered: RecoveredTimeSeries,
@@ -119,7 +119,7 @@ func (s Series) Last(num int) Series {
 }
 
 func GetTimeSeries(seriesType TimeSeriesType) Series {
-  file, err := os.Open(timeSeriesPaths[seriesType].AsString())
+  file, err := os.Open(TimeSeriesPaths[seriesType].AsString())
   Check(err)
 
   r := csv.NewReader(file)

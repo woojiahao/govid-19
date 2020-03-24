@@ -3,7 +3,7 @@ module github.com/woojiahao/govid-19
 go 1.12
 
 require (
-	github.com/gin-contrib/cors v1.3.1 // indirect
+	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/golang/protobuf v1.3.5 // indirect

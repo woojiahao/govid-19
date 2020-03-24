@@ -40,3 +40,4 @@ $ docker-compose up
 - [ ] Auto-pull the repository every day
 - [X] Compute the overall changes of the data since the data is accumulative now
 - [ ] Deployment guide
+- [X] Endpoint for country information
