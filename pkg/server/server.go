@@ -29,12 +29,12 @@ func Start() {
   // Run the data loading in a goroutine
   go loadData()
 
-  // Load the API endpoints
-  api.Build(r)
-
   // Auto-update the API data
   // TODO Test that this works
-  Run(loadData)
+  go Run(loadData)
+
+  // Load the API endpoints
+  api.Build(r)
 
   // Configure CORS for the API to allow all origins
   r.Use(cors.New(cors.Config{
