@@ -14,9 +14,9 @@ const (
   Root                RepoPath = "tmp"
   DailyReports        RepoPath = "tmp/csse_covid_19_data/csse_covid_19_daily_reports"
   TimeSeries          RepoPath = "tmp/csse_covid_19_data/csse_covid_19_time_series"
-  ConfirmedTimeSeries          = TimeSeries + "/time_series_19-covid-Confirmed.csv"
-  DeathsTimeSeries             = TimeSeries + "/time_series_19-covid-Deaths.csv"
-  RecoveredTimeSeries          = TimeSeries + "/time_series_19-covid-Recovered.csv"
+  ConfirmedTimeSeries          = TimeSeries + "/time_series_covid19_confirmed_global.csv"
+  DeathsTimeSeries             = TimeSeries + "/time_series_covid19_deaths_global.csv"
+  RecoveredTimeSeries          = TimeSeries + "/time_series_covid19_recovered_global.csv"
 )
 
 func (path RepoPath) AsString() string {
