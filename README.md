@@ -21,7 +21,10 @@ Returns all statistics.
 - `first` - get the first *n* number of records
 - `last` - get the last *n* number of records
 - `sort-data` - sort the results by the total value of each category
-- `sort-records` - sort the data of the results
+
+### GET /countries
+
+Returns all available countries and states.
 
 ## Deployment
 
