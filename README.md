@@ -40,7 +40,11 @@ $ docker-compose up
 
 ## TODO
 
-- [ ] Auto-pull the repository every day
+- [X] Auto-pull the repository every day
 - [X] Compute the overall changes of the data since the data is accumulative now
 - [ ] Deployment guide
 - [X] Endpoint for country information
+
+## Lessons
+
+- CORS must be configured before any API routes are created otherwise the client will encounter CORS issues

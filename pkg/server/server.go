@@ -30,15 +30,17 @@ func Start() {
   log.Print("Loading data")
   loadData()
 
+  // CORS configuration must occur before creating any API routes
+  log.Print("Setting up CORS")
+  r.Use(cors.New(cors.Config{
+    AllowAllOrigins:  true,
+    AllowMethods:     []string{"GET", "OPTIONS"},
+    AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "User-Agent", "Referrer", "Host", "Token"},
+    ExposeHeaders:    []string{"Content-Length"},
+  }))
+
   log.Print("Building API endpoints")
   api.Build(r)
-
-  r.Use(cors.New(cors.Config{
-    AllowAllOrigins: true,
-    AllowMethods:    []string{"GET", "PATCH"},
-    AllowHeaders:    []string{"Origin"},
-    ExposeHeaders:   []string{"Content-Length"},
-  }))
 
   log.Print("Creating timer to update data daily")
   go Run(loadData)
