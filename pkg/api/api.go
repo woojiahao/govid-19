@@ -1,7 +1,6 @@
 package api
 
 import (
-  "fmt"
   "github.com/gin-gonic/gin"
 )
 
@@ -24,7 +23,6 @@ var endpoints = []Endpoint{
 }
 
 func Build(engine *gin.Engine) {
-  fmt.Println("Building endpoints...")
   for _, endpoint := range endpoints {
     path, action := endpoint.Path, endpoint.Action
     switch endpoint.RequestType {
