@@ -21,6 +21,8 @@ func loadData() {
   } else {
     data.Update()
   }
+
+  data.Process()
 }
 
 func Start() {

@@ -2,9 +2,17 @@
 
 Go API for retrieving Covid-19 statistics
 
+## Changelog
+
+- Data structure (see below)
+- Time series data is now stored globally at runtime and updated daily when fetching a new set of results
+
 ## Endpoints
 
 - `GET /latest` - retrieve the latest statistics
+- `GET /countries` - retrieve all countries
+- `GET /ping` - ping to see if the server is running
+- `GET /all` - retrieve statistics of all countries
 
 ### GET /ping
 

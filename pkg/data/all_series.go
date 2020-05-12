@@ -1,9 +1,9 @@
 package data
 
 type AllSeries struct {
-  confirmed Series
-  deaths    Series
-  recovered Series
+  confirmed SeriesGrouping
+  deaths    SeriesGrouping
+  recovered SeriesGrouping
 }
 
 func (as *AllSeries) ToJSON() map[string]interface{} {

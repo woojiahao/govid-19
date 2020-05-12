@@ -15,6 +15,7 @@ var TimeSeriesPaths = map[TimeSeriesType]RepoPath{
   Recovered: RecoveredTimeSeries,
 }
 
+// Single day of data for a specific country/region
 type TimeSeriesRecordData struct {
   Date  string `json:"date"`
   Value int    `json:"value"`

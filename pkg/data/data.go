@@ -19,6 +19,15 @@ const (
   RecoveredTimeSeries          = TimeSeries + "/time_series_covid19_recovered_global.csv"
 )
 
+type SeriesGrouping map[string][]TimeSeriesRecord
+
+var (
+  confirmedCases SeriesGrouping
+  recoveredCases SeriesGrouping
+  deathCases     SeriesGrouping
+  Countries      []Country
+)
+
 func (path RepoPath) AsString() string {
   ref := reflect.ValueOf(path)
   return ref.String()
@@ -58,4 +67,27 @@ func Update() {
 func GetAll() (Series, Series, Series) {
   confirmed, deaths, recovered := GetTimeSeries(Confirmed), GetTimeSeries(Deaths), GetTimeSeries(Recovered)
   return confirmed, deaths, recovered
+}
+
+// Loads all the data that is returned by each endpoint
+// Data loading is performed implicitly as the data set is huge and static for the most part
+// The data is updated once per day and remains untouched for the rest of the day meaning that
+// it's easier to just process everything at once and when the data is updated, re-process it
+// to improve performance
+func Process() {
+  confirmedCases, deathCases, recoveredCases = getCases(Confirmed), getCases(Deaths), getCases(Recovered)
+  Countries = getCountriesFromTimeSeries(GetTimeSeries(Confirmed))
+}
+
+func groupByCountry(s Series) SeriesGrouping {
+  data := make(map[string][]TimeSeriesRecord)
+  for _, r := range s.Records {
+    data[r.Country] = append(data[r.Country], r)
+  }
+
+  return data
+}
+
+func getCases(st TimeSeriesType) SeriesGrouping {
+  return groupByCountry(GetTimeSeries(st))
 }
