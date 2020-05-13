@@ -6,6 +6,7 @@ import (
   "gopkg.in/src-d/go-git.v4"
   "os"
   "reflect"
+  "strings"
 )
 
 type RepoPath string
@@ -19,13 +20,66 @@ const (
   RecoveredTimeSeries          = TimeSeries + "/time_series_covid19_recovered_global.csv"
 )
 
-type SeriesGrouping map[string][]TimeSeriesRecord
+type CountryInformation map[string]map[string]StateData
+
+func (ci CountryInformation) FilterCountry(c string) CountryInformation {
+  result := CountryInformation{}
+  for country, stateData := range ci {
+    if strings.Contains(strings.ToLower(country), strings.ToLower(c)) {
+      result[country] = stateData
+    }
+  }
+  return result
+}
+
+func (ci CountryInformation) FilterState(s string) CountryInformation {
+  result := CountryInformation{}
+  for country, stateData := range ci {
+    for state, data := range stateData {
+      if strings.Contains(strings.ToLower(state), strings.ToLower(s)) {
+        if _, ok := result[country]; !ok {
+          result[country] = make(map[string]StateData)
+        }
+        result[country][state] = data
+      }
+    }
+  }
+  return result
+}
+
+func (ci CountryInformation) First(n int) CountryInformation {
+  result, counter := CountryInformation{}, 0
+  for country, stateData := range ci {
+    if counter >= n {
+      break
+    }
+
+    result[country] = stateData
+    counter++
+  }
+  return result
+}
+
+func (ci CountryInformation) Last(n int) CountryInformation {
+  result, counter := CountryInformation{}, 0
+  for country, stateData := range ci {
+    if counter < n {
+      continue
+    }
+
+    result[country] = stateData
+    counter++
+  }
+  return result
+}
+
+func (ci CountryInformation) SortTotal(order SortOrder) {
+
+}
 
 var (
-  confirmedCases SeriesGrouping
-  recoveredCases SeriesGrouping
-  deathCases     SeriesGrouping
-  Countries      []Country
+  Data      CountryInformation
+  Countries []Country
 )
 
 func (path RepoPath) AsString() string {
@@ -34,7 +88,7 @@ func (path RepoPath) AsString() string {
 }
 
 // Load the repository into /tmp.
-func Load() {
+func load() {
   _, err := git.PlainClone(Root.AsString(), false, &git.CloneOptions{
     URL:      "https://github.com/CSSEGISandData/COVID-19.git",
     Progress: os.Stdout,
@@ -43,7 +97,7 @@ func Load() {
 }
 
 // Update the repository to the latest changes.
-func Update() {
+func update() {
   r, err := git.PlainOpen(Root.AsString())
   Check(err)
 
@@ -63,31 +117,45 @@ func Update() {
   }
 }
 
-// Aggregate the values from the time series to create a grouping for the information.
-func GetAll() (Series, Series, Series) {
-  confirmed, deaths, recovered := GetTimeSeries(Confirmed), GetTimeSeries(Deaths), GetTimeSeries(Recovered)
-  return confirmed, deaths, recovered
+// Data loaded on startup as changes happen once a day and can be updated once the changes are made
+func process() {
+  confirmedCases, deathCases, recoveredCases := getTimeSeries(Confirmed),
+    getTimeSeries(Deaths),
+    getTimeSeries(Recovered)
+  Countries = getCountriesFromTimeSeries(getTimeSeries(Confirmed))
+
+  Data = CountryInformation{}
+  for _, country := range Countries {
+    if _, ok := Data[country.Name]; !ok {
+      Data[country.Name] = make(map[string]StateData)
+    }
+
+    for _, state := range country.States {
+      record := StateData{
+        country.Name,
+        state.Name,
+        state.Long,
+        state.Lat,
+        confirmedCases.GetByState(state.Name).Records,
+        deathCases.GetByState(state.Name).Records,
+        recoveredCases.GetByState(state.Name).Records,
+      }
+      Data[country.Name][state.Name] = record
+    }
+  }
 }
 
-// Loads all the data that is returned by each endpoint
-// Data loading is performed implicitly as the data set is huge and static for the most part
-// The data is updated once per day and remains untouched for the rest of the day meaning that
-// it's easier to just process everything at once and when the data is updated, re-process it
-// to improve performance
-func Process() {
-  confirmedCases, deathCases, recoveredCases = getCases(Confirmed), getCases(Deaths), getCases(Recovered)
-  Countries = getCountriesFromTimeSeries(GetTimeSeries(Confirmed))
-}
+// If the current instance already contains the repository, pull the latest changes from the repository
+// If the current instance does not contain the repository, clone the repository
+func LoadData() {
+  if _, err := os.Stat(Root.AsString()); os.IsNotExist(err) {
+    tmp := os.Mkdir(Root.AsString(), 0755)
+    Check(tmp)
 
-func groupByCountry(s Series) SeriesGrouping {
-  data := make(map[string][]TimeSeriesRecord)
-  for _, r := range s.Records {
-    data[r.Country] = append(data[r.Country], r)
+    load()
+  } else {
+    update()
   }
 
-  return data
-}
-
-func getCases(st TimeSeriesType) SeriesGrouping {
-  return groupByCountry(GetTimeSeries(st))
+  process()
 }

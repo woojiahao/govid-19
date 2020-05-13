@@ -119,7 +119,7 @@ func (s Series) Last(num int) Series {
   return *s.Clone(s.Records[len(s.Records)-num-1:])
 }
 
-func GetTimeSeries(seriesType TimeSeriesType) Series {
+func getTimeSeries(seriesType TimeSeriesType) Series {
   file, err := os.Open(TimeSeriesPaths[seriesType].AsString())
   Check(err)
 

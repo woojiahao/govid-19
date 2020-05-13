@@ -11,6 +11,16 @@ type Country struct {
   States []State `json:"states"`
 }
 
+type StateData struct {
+  Country   string
+  State     string
+  Long      float32
+  Lat       float32
+  Confirmed []TimeSeriesRecord
+  Deaths    []TimeSeriesRecord
+  Recovered []TimeSeriesRecord
+}
+
 // TODO Might be able to collapse this along with the processing of the other data
 func getCountriesFromTimeSeries(s Series) []Country {
   stateMapping := make(map[string][]State, 0)

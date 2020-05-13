@@ -7,8 +7,6 @@ import (
 // TODO Test for case sensitivity in the query parameters
 // TODO Add the sum of the data returned
 func All(c *gin.Context) {
-  //confirmed, deaths, recovered := data.GetAll()
-  //
   //params := c.Request.URL.Query()
   //country, state, first, last, sortData, sortRecords := params.Get("country"),
   //  params.Get("state"),
@@ -18,9 +16,7 @@ func All(c *gin.Context) {
   //  params.Get("sort-records")
   //
   //if country != "" {
-  //  confirmed, deaths, recovered = confirmed.GetByCountry(country),
-  //    deaths.GetByCountry(country),
-  //    recovered.GetByCountry(country)
+  //  d = map[string]map[string]data.StateData{country: d[country]}
   //}
   //
   //if state != "" {
@@ -28,7 +24,7 @@ func All(c *gin.Context) {
   //    deaths.GetByState(state),
   //    recovered.GetByState(state)
   //}
-  //
+
   //// TODO Experiment with passing the sorting function as a lambda/function argument to clean up the code
   //if sortData != "" {
   //  order, status, errMsg := data.CheckSortOrder(sortData)
