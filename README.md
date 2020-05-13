@@ -56,3 +56,5 @@ $ docker-compose up
 ## Lessons
 
 - CORS must be configured before any API routes are created otherwise the client will encounter CORS issues
+- GORM is limited in its functionality with tags; for foreign keys, the association must be declared during table 
+    creation and not during struct declaration
