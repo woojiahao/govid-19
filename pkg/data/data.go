@@ -78,8 +78,10 @@ func (ci CountryInformation) SortTotal(order SortOrder) {
 }
 
 var (
-  Data      CountryInformation
-  Countries []Country
+  Countries      []Country
+  ConfirmedCases Series
+  RecoveredCases Series
+  DeathCases     Series
 )
 
 func (path RepoPath) AsString() string {
@@ -119,30 +121,11 @@ func update() {
 
 // Data loaded on startup as changes happen once a day and can be updated once the changes are made
 func process() {
-  confirmedCases, deathCases, recoveredCases := getTimeSeries(Confirmed),
+  ConfirmedCases, DeathCases, RecoveredCases = getTimeSeries(Confirmed),
     getTimeSeries(Deaths),
     getTimeSeries(Recovered)
-  Countries = getCountriesFromTimeSeries(getTimeSeries(Confirmed))
 
-  Data = CountryInformation{}
-  for _, country := range Countries {
-    if _, ok := Data[country.Name]; !ok {
-      Data[country.Name] = make(map[string]StateData)
-    }
-
-    for _, state := range country.States {
-      record := StateData{
-        country.Name,
-        state.Name,
-        state.Long,
-        state.Lat,
-        confirmedCases.GetByState(state.Name).Records,
-        deathCases.GetByState(state.Name).Records,
-        recoveredCases.GetByState(state.Name).Records,
-      }
-      Data[country.Name][state.Name] = record
-    }
-  }
+  Countries = getCountriesFromTimeSeries(ConfirmedCases)
 }
 
 // If the current instance already contains the repository, pull the latest changes from the repository

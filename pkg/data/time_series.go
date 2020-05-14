@@ -2,11 +2,13 @@ package data
 
 import (
   "encoding/csv"
+  "fmt"
   . "github.com/woojiahao/govid-19/pkg/utility"
   "io"
   "os"
   "sort"
   "strings"
+  "time"
 )
 
 var TimeSeriesPaths = map[TimeSeriesType]RepoPath{
@@ -17,7 +19,7 @@ var TimeSeriesPaths = map[TimeSeriesType]RepoPath{
 
 // Single day of data for a specific country/region
 type TimeSeriesRecordData struct {
-  Date  string `json:"date"`
+  Date  time.Time `json:"date"`
   Value int    `json:"value"`
 }
 
@@ -57,7 +59,7 @@ func (s *Series) Clone(newRecords []TimeSeriesRecord) *Series {
 func (s *Series) GetByCountry(country string) Series {
   results := make([]TimeSeriesRecord, 0)
   for _, record := range s.Records {
-    if strings.Contains(record.Country, country) {
+    if strings.Contains(strings.ToLower(record.Country), strings.ToLower(country)) {
       results = append(results, record)
     }
   }
@@ -69,12 +71,28 @@ func (s *Series) GetByCountry(country string) Series {
 func (s *Series) GetByState(state string) Series {
   results := make([]TimeSeriesRecord, 0)
   for _, record := range s.Records {
-    if strings.Contains(record.State, state) {
+    if strings.Contains(strings.ToLower(record.State), strings.ToLower(state)) {
       results = append(results, record)
     }
   }
 
   return *s.Clone(results)
+}
+
+func (s *Series) GetValueOfDate(country, state string, date time.Time) int {
+  location := s.GetByCountry(country)
+  location = location.GetByState(state)
+  if len(location.Records) <= 0 {
+    return -1
+  }
+
+  for _, record := range location.Records[0].Data {
+    if date == record.Date {
+      return record.Value
+    }
+  }
+
+  return -1
 }
 
 // Sorts results by the records
@@ -144,8 +162,15 @@ func getTimeSeries(seriesType TimeSeriesType) Series {
         if i != 0 {
           prev = ToInt(rawData[i-1])
         }
+
+        date := strings.Split(timeHeaders[i], "/")
+        month, day, year := date[0], date[1], date[2]
+        const timeLayout = "01/02/2006"
+        formattedDate, err := time.Parse(timeLayout, fmt.Sprintf("%02s/%02s/20%s", month, day, year))
+        Check(err)
+
         data = append(data, TimeSeriesRecordData{
-          Date:  timeHeaders[i],
+          Date:  formattedDate,
           Value: ToInt(d) - prev,
         })
       }
