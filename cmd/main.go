@@ -3,6 +3,7 @@ package main
 import (
   "github.com/woojiahao/govid-19/pkg/data"
   "github.com/woojiahao/govid-19/pkg/database"
+  "github.com/woojiahao/govid-19/pkg/server"
   "log"
 )
 
@@ -16,5 +17,5 @@ func main() {
   databaseManager = database.Setup(data.ConfirmedCases, data.RecoveredCases, data.DeathCases)
 
   log.Print("Starting server")
-  //server.Start(databaseManager)
+  server.Start(databaseManager)
 }
