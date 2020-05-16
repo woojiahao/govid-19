@@ -1,42 +1,47 @@
 package api
 
 import (
+  "fmt"
   "github.com/gin-gonic/gin"
+  "github.com/woojiahao/govid-19/pkg/data"
 )
 
 // TODO Test for case sensitivity in the query parameters
 // TODO Add the sum of the data returned
 func All(c *gin.Context) {
-  //params := c.Request.URL.Query()
+  params := c.Request.URL.Query()
   //country, state, first, last, sortData, sortRecords := params.Get("country"),
-  //  params.Get("state"),
-  //  params.Get("first"),
-  //  params.Get("last"),
-  //  params.Get("sort-data"),
-  //  params.Get("sort-records")
-  //
-  //if country != "" {
-  //  d = map[string]map[string]data.StateData{country: d[country]}
-  //}
-  //
-  //if state != "" {
-  //  confirmed, deaths, recovered = confirmed.GetByState(state),
-  //    deaths.GetByState(state),
-  //    recovered.GetByState(state)
-  //}
+  // params.Get("state"),
+  // params.Get("first"),
+  // params.Get("last"),
+  // params.Get("sort-data"),
+  // params.Get("sort-records")
+  country, state, sortTotal := params.Get("country"), params.Get("state"), params.Get("sort-total")
+
+  query := databaseManager.
+    DB.
+    Table("record").
+    Select("*").
+    Joins("inner join location on location.id = record.location_id")
+
+  if country != "" {
+    query = query.Where("location.country like ?", fmt.Sprintf("%%%s%%", country))
+  }
+
+  if state != "" {
+    query = query.Where("location.state like ?", fmt.Sprintf("%%%s%%", state))
+  }
 
   //// TODO Experiment with passing the sorting function as a lambda/function argument to clean up the code
-  //if sortData != "" {
-  //  order, status, errMsg := data.CheckSortOrder(sortData)
-  //  if !status {
-  //    BadRequest(c, errMsg)
-  //    return
-  //  }
-  //  confirmed, deaths, recovered = confirmed.SortData(order),
-  //    deaths.SortData(order),
-  //    recovered.SortData(order)
-  //}
-  //
+  if sortTotal != "" {
+   order, status, errMsg := data.CheckSortOrder(sortTotal)
+   if !status {
+     BadRequest(c, errMsg)
+     return
+   }
+   fmt.Println(order)
+  }
+
   //if sortRecords != "" {
   //  order, status, errMsg := data.CheckSortOrder(sortRecords)
   //  if !status {

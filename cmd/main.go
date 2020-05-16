@@ -6,13 +6,15 @@ import (
   "log"
 )
 
+var databaseManager *database.Manager
+
 func main() {
   log.Print("Loading data")
   data.LoadData()
 
   log.Print("Setting up database")
-  database.Setup(data.ConfirmedCases, data.RecoveredCases, data.DeathCases)
+  databaseManager = database.Setup(data.ConfirmedCases, data.RecoveredCases, data.DeathCases)
 
-  //log.Print("Starting server")
-  //server.Start()
+  log.Print("Starting server")
+  //server.Start(databaseManager)
 }

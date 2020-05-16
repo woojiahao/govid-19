@@ -5,11 +5,12 @@ import (
   "github.com/gin-gonic/gin"
   "github.com/woojiahao/govid-19/pkg/api"
   "github.com/woojiahao/govid-19/pkg/data"
+  "github.com/woojiahao/govid-19/pkg/database"
   . "github.com/woojiahao/govid-19/pkg/utility"
   "log"
 )
 
-func Start() {
+func Start(databaseManager *database.Manager) {
   r := gin.Default()
 
   // CORS configuration must occur before creating any API routes
@@ -22,7 +23,7 @@ func Start() {
   }))
 
   log.Print("Building API endpoints")
-  api.Build(r)
+  api.Build(r, databaseManager)
 
   log.Print("Creating timer to update data daily")
   go Run(data.LoadData)

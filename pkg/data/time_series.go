@@ -83,7 +83,7 @@ func (s *Series) GetValueOfDate(country, state string, date time.Time) int {
   location := s.GetByCountry(country)
   location = location.GetByState(state)
   if len(location.Records) <= 0 {
-    return -1
+    return 0
   }
 
   for _, record := range location.Records[0].Data {

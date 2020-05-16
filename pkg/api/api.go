@@ -3,7 +3,10 @@ package api
 import (
   "github.com/gin-gonic/gin"
   "github.com/woojiahao/govid-19/pkg/data"
+  "github.com/woojiahao/govid-19/pkg/database"
 )
+
+var databaseManager *database.Manager
 
 var endpoints = []Endpoint{
   {
@@ -27,7 +30,8 @@ var endpoints = []Endpoint{
   },
 }
 
-func Build(engine *gin.Engine) {
+func Build(engine *gin.Engine, manager *database.Manager) {
+  databaseManager = manager
   for _, endpoint := range endpoints {
     path, action := endpoint.Path, endpoint.Action
     switch endpoint.RequestType {

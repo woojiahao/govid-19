@@ -9,7 +9,6 @@ import (
   . "github.com/woojiahao/govid-19/pkg/utility"
   "net/url"
   "os"
-  "time"
 )
 
 var (
@@ -23,24 +22,13 @@ const (
   port = 5432
 )
 
-type Location struct {
-  gorm.Model
-  Country string `gorm:"not null;type:text"`
-  State   string `gorm:"type:text"`
-  Long    float32
-  Lat     float32
-  Records []Record
+type dataRow struct {
+  location Location
+  records  []interface{}
 }
 
-// Single record for a day in a country/state
-type Record struct {
-  gorm.Model
-  Date       *time.Time
-  Confirmed  int `gorm:"not null"`
-  Recovered  int `gorm:"not null"`
-  Deaths     int `gorm:"not null"`
-  Location   Location
-  LocationID uint
+type Manager struct {
+  DB *gorm.DB
 }
 
 func connect() *gorm.DB {
@@ -51,35 +39,30 @@ func connect() *gorm.DB {
     Path:     database,
     RawQuery: (&url.Values{"sslmode": []string{"disable"}}).Encode(),
   }
-  db, err := gorm.Open("postgres", databaseUrl.String())
+  DB, err := gorm.Open("postgres", databaseUrl.String())
   Check(err)
-  return db
+  return DB
 }
 
-func configure(db *gorm.DB) {
-  db.LogMode(true)
-  db.SingularTable(true)
+func (manager *Manager) configure() {
+  manager.DB.LogMode(true)
+  manager.DB.SingularTable(true)
 }
 
-func setupTables(db *gorm.DB) {
-  db.DropTableIfExists(&Record{})
-  db.DropTableIfExists(&Location{})
+func (manager *Manager) setupTables() {
+  manager.DB.DropTableIfExists(&Record{})
+  manager.DB.DropTableIfExists(&Location{})
 
-  db.CreateTable(&Location{})
-  db.
+  manager.DB.CreateTable(&Location{})
+  manager.DB.
     CreateTable(&Record{}).
     AddForeignKey("location_id", "location(id)", "RESTRICT", "RESTRICT")
 }
 
-// Load the database with the time series information
-func loadData(db *gorm.DB, confirmedCases, recoveredCases, deathCases data.Series) {
+func (manager *Manager) createData(confirmedCases, recoveredCases, deathCases data.Series) []dataRow {
   counter := 0
 
-  type dataRow struct {
-    location Location
-    records  []interface{}
-  }
-  data := make([]dataRow, 0)
+  dataRows := make([]dataRow, 0)
   for _, r := range confirmedCases.Records {
     counter++
     row := dataRow{records: make([]interface{}, 0)}
@@ -93,7 +76,7 @@ func loadData(db *gorm.DB, confirmedCases, recoveredCases, deathCases data.Serie
 
     for _, d := range r.Data {
       record := Record{
-        Date:       &d.Date,
+        Date:       d.Date,
         Confirmed:  d.Value,
         Recovered:  recoveredCases.GetValueOfDate(r.Country, r.State, d.Date),
         Deaths:     deathCases.GetValueOfDate(r.Country, r.State, d.Date),
@@ -102,23 +85,27 @@ func loadData(db *gorm.DB, confirmedCases, recoveredCases, deathCases data.Serie
       row.records = append(row.records, record)
     }
 
-    data = append(data, row)
+    dataRows = append(dataRows, row)
   }
 
-  for _, record := range data {
-    db.Create(&record.location)
-    gormbulk.BulkInsert(db, record.records, 3000)
+  return dataRows
+}
+
+// Load the database with the time series information
+func (manager *Manager) loadData(dataRows []dataRow) {
+  for _, record := range dataRows {
+    manager.DB.Create(&record.location)
+    _ = gormbulk.BulkInsert(manager.DB, record.records, 3000)
   }
 }
 
 // Configures the database to upload the data to
-func Setup(confirmedCases, recoveredCases, deathCases data.Series) {
+func Setup(confirmedCases, recoveredCases, deathCases data.Series) *Manager {
   db := connect()
-  defer func() {
-    _ = db.Close()
-  }()
-
-  configure(db)
-  setupTables(db)
-  loadData(db, confirmedCases, recoveredCases, deathCases)
+  manager := Manager{db}
+  manager.configure()
+  manager.setupTables()
+  dataRows := manager.createData(confirmedCases, recoveredCases, deathCases)
+  manager.loadData(dataRows)
+  return &manager
 }
