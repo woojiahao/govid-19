@@ -30,6 +30,28 @@ Returns all statistics.
 - `last` - get the last *n* number of records
 - `sort-data` - sort the results by the total value of each category
 
+#### Response structure
+
+```json
+{
+  "<country>": {
+    "<state>": {
+      "long": 0.0,
+      "lat": 0.0,
+      "confirmed": {
+        "total": 0,
+        "data": [
+          {
+            "date": "dd-MM-yyyy",
+            "value": 0
+          }
+        ]   
+      }
+    } 
+  }
+}
+```
+
 ### GET /countries
 
 Returns all available countries and states.
