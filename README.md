@@ -46,6 +46,24 @@ Returns all statistics.
             "value": 0
           }
         ]   
+      },
+      "recovered": {
+        "total": 0,
+        "data": [
+          {
+            "date": "dd-MM-yyyy",
+            "value": 0
+          }
+        ]   
+      },
+      "deaths": {
+        "total": 0,
+        "data": [
+          {
+            "date": "dd-MM-yyyy",
+            "value": 0
+          }
+        ]   
       }
     } 
   }
