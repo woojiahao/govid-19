@@ -26,7 +26,7 @@ func Start(databaseManager *database.Manager) {
   api.Build(r, databaseManager)
 
   log.Print("Creating timer to update data daily")
-  go Run(data.LoadData)
+  go Run(data.UpdateData)
 
   log.Print("Running server")
   err := r.Run()

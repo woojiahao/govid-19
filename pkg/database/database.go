@@ -9,13 +9,16 @@ import (
   . "github.com/woojiahao/govid-19/pkg/utility"
   "net/url"
   "os"
+  "strconv"
 )
 
+// TODO Add a check if the latest changes are uploaded, if they are, don't need to do the db operations
 var (
   user     = os.Getenv("POSTGRES_USER")
   pass     = os.Getenv("POSTGRES_PASSWORD")
   database = os.Getenv("POSTGRES_DB")
   host     = os.Getenv("HOST")
+  hasLog   = os.Getenv("HAS_LOG")
 )
 
 const (
@@ -44,11 +47,17 @@ func connect() *gorm.DB {
   return DB
 }
 
+// Configure GORM database settings
 func (manager *Manager) configure() {
-  manager.DB.LogMode(true)
+  logMode, err := strconv.ParseBool(hasLog)
+  if err != nil {
+    logMode = false
+  }
+  manager.DB.LogMode(logMode)
   manager.DB.SingularTable(true)
 }
 
+// Create database structure
 func (manager *Manager) setupTables() {
   manager.DB.DropTableIfExists(&Record{})
   manager.DB.DropTableIfExists(&Location{})
@@ -59,6 +68,7 @@ func (manager *Manager) setupTables() {
     AddForeignKey("location_id", "location(id)", "RESTRICT", "RESTRICT")
 }
 
+// Parse .csv data into format that the database can receive
 func (manager *Manager) createData(confirmedCases, recoveredCases, deathCases data.Series) []dataRow {
   counter := 0
 
@@ -99,13 +109,36 @@ func (manager *Manager) loadData(dataRows []dataRow) {
   }
 }
 
-// Configures the database to upload the data to
-func Setup(confirmedCases, recoveredCases, deathCases data.Series) *Manager {
-  db := connect()
-  manager := Manager{db}
-  manager.configure()
+// Upload .csv data to database
+func (manager *Manager) UploadData(confirmedCases, recoveredCases, deathCases data.Series) {
   manager.setupTables()
   dataRows := manager.createData(confirmedCases, recoveredCases, deathCases)
   manager.loadData(dataRows)
+}
+
+// Return if the database is up-to-date aka latest changes have been uploaded
+func (manager *Manager) IsUpToDate() bool {
+  tables := []string{"location", "record"}
+  for _, table := range tables {
+    rowsAffected := manager.
+      DB.
+      Table(table).
+      Select("distinct created_at::date").
+      Where("current_timestamp::date <> created_at::date").
+      RowsAffected
+
+    if rowsAffected != 0 {
+      return false
+    }
+  }
+
+  return true
+}
+
+// Configure GORM
+func Setup() *Manager {
+  db := connect()
+  manager := Manager{db}
+  manager.configure()
   return &manager
 }

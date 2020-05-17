@@ -10,11 +10,20 @@ import (
 var databaseManager *database.Manager
 
 func main() {
-  log.Print("Loading data")
-  data.LoadData()
+  log.Print("Connecting to database")
+  databaseManager = database.Setup()
 
-  log.Print("Setting up database")
-  databaseManager = database.Setup(data.ConfirmedCases, data.RecoveredCases, data.DeathCases)
+  if !databaseManager.IsUpToDate() {
+    log.Print("Sources are out of date")
+    log.Print("Updating sources")
+    data.UpdateData()
+
+    log.Print("Loading data")
+    confirmedCases, recoveredCases, deathCases := data.LoadData()
+
+    log.Print("Uploading data into database")
+    databaseManager.UploadData(confirmedCases, recoveredCases, deathCases)
+  }
 
   log.Print("Starting server")
   server.Start(databaseManager)

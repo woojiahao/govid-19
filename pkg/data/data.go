@@ -6,7 +6,6 @@ import (
   "gopkg.in/src-d/go-git.v4"
   "os"
   "reflect"
-  "strings"
 )
 
 type RepoPath string
@@ -18,70 +17,6 @@ const (
   ConfirmedTimeSeries          = TimeSeries + "/time_series_covid19_confirmed_global.csv"
   DeathsTimeSeries             = TimeSeries + "/time_series_covid19_deaths_global.csv"
   RecoveredTimeSeries          = TimeSeries + "/time_series_covid19_recovered_global.csv"
-)
-
-type CountryInformation map[string]map[string]StateData
-
-func (ci CountryInformation) FilterCountry(c string) CountryInformation {
-  result := CountryInformation{}
-  for country, stateData := range ci {
-    if strings.Contains(strings.ToLower(country), strings.ToLower(c)) {
-      result[country] = stateData
-    }
-  }
-  return result
-}
-
-func (ci CountryInformation) FilterState(s string) CountryInformation {
-  result := CountryInformation{}
-  for country, stateData := range ci {
-    for state, data := range stateData {
-      if strings.Contains(strings.ToLower(state), strings.ToLower(s)) {
-        if _, ok := result[country]; !ok {
-          result[country] = make(map[string]StateData)
-        }
-        result[country][state] = data
-      }
-    }
-  }
-  return result
-}
-
-func (ci CountryInformation) First(n int) CountryInformation {
-  result, counter := CountryInformation{}, 0
-  for country, stateData := range ci {
-    if counter >= n {
-      break
-    }
-
-    result[country] = stateData
-    counter++
-  }
-  return result
-}
-
-func (ci CountryInformation) Last(n int) CountryInformation {
-  result, counter := CountryInformation{}, 0
-  for country, stateData := range ci {
-    if counter < n {
-      continue
-    }
-
-    result[country] = stateData
-    counter++
-  }
-  return result
-}
-
-func (ci CountryInformation) SortTotal(order SortOrder) {
-
-}
-
-var (
-  Countries      []Country
-  ConfirmedCases Series
-  RecoveredCases Series
-  DeathCases     Series
 )
 
 func (path RepoPath) AsString() string {
@@ -119,18 +54,9 @@ func update() {
   }
 }
 
-// Data loaded on startup as changes happen once a day and can be updated once the changes are made
-func process() {
-  ConfirmedCases, DeathCases, RecoveredCases = getTimeSeries(Confirmed),
-    getTimeSeries(Deaths),
-    getTimeSeries(Recovered)
-
-  Countries = getCountriesFromTimeSeries(ConfirmedCases)
-}
-
 // If the current instance already contains the repository, pull the latest changes from the repository
 // If the current instance does not contain the repository, clone the repository
-func LoadData() {
+func UpdateData() {
   if _, err := os.Stat(Root.AsString()); os.IsNotExist(err) {
     tmp := os.Mkdir(Root.AsString(), 0755)
     Check(tmp)
@@ -139,6 +65,8 @@ func LoadData() {
   } else {
     update()
   }
+}
 
-  process()
+func LoadData() (Series, Series, Series) {
+  return getTimeSeries(Confirmed), getTimeSeries(Recovered), getTimeSeries(Deaths)
 }
