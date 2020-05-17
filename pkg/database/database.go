@@ -120,12 +120,15 @@ func (manager *Manager) UploadData(confirmedCases, recoveredCases, deathCases da
 func (manager *Manager) IsUpToDate() bool {
   tables := []string{"location", "record"}
   for _, table := range tables {
-    rowsAffected := manager.
+    var result []interface{}
+    manager.
       DB.
       Table(table).
       Select("distinct created_at::date").
       Where("current_timestamp::date <> created_at::date").
-      RowsAffected
+      Find(&result)
+
+    rowsAffected := len(result)
 
     if rowsAffected != 0 {
       return false
