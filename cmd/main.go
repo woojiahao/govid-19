@@ -13,10 +13,10 @@ func main() {
   log.Print("Connecting to database")
   databaseManager = database.Setup()
 
-  if !databaseManager.IsUpToDate() {
+  if databaseManager.IsUpToDate() {
     log.Print("Sources are out of date")
     log.Print("Updating sources")
-    data.UpdateData()
+    //data.UpdateData()
 
     log.Print("Loading data")
     confirmedCases, recoveredCases, deathCases := data.LoadData()

@@ -2,7 +2,6 @@ package api
 
 import (
   "github.com/gin-gonic/gin"
-  "github.com/woojiahao/govid-19/pkg/data"
   "github.com/woojiahao/govid-19/pkg/database"
 )
 
@@ -10,23 +9,26 @@ var databaseManager *database.Manager
 
 var endpoints = []Endpoint{
   {
-    RequestType: GET,
-    Path:        "/ping",
-    Action: func(c *gin.Context) {
+    GET,
+    "/ping",
+    func(c *gin.Context) {
       OK(c, gin.H{"message": "pong"})
     },
   },
   {
-    RequestType: GET,
-    Path:        "/countries",
-    Action: func(c *gin.Context) {
-      OK(c, data.Countries)
-    },
+    GET,
+    "/countries",
+    GetCountries,
   },
   {
-    RequestType: GET,
-    Path:        "/all",
-    Action:      All,
+    GET,
+    "/all",
+    All,
+  },
+  {
+    GET,
+    "/stats/general",
+    getGeneralCountryInformation,
   },
 }
 

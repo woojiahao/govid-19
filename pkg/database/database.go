@@ -12,7 +12,6 @@ import (
   "strconv"
 )
 
-// TODO Add a check if the latest changes are uploaded, if they are, don't need to do the db operations
 var (
   user     = os.Getenv("POSTGRES_USER")
   pass     = os.Getenv("POSTGRES_PASSWORD")
