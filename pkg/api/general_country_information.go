@@ -3,6 +3,7 @@ package api
 import (
   "fmt"
   "github.com/gin-gonic/gin"
+  "math"
   "strings"
 )
 
@@ -76,7 +77,7 @@ func getGeneralCountryInformation(c *gin.Context) {
   query.Find(&results)
 
   if params.First != 0 {
-    OK(c, results[:params.First])
+    OK(c, results[:int(math.Min(float64(params.First), float64(len(results))))])
   } else if params.Last != 0 {
     OK(c, results[len(results)-params.Last:])
   } else {
