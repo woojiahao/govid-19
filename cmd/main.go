@@ -7,19 +7,17 @@ import (
   "log"
 )
 
-var databaseManager *database.Manager
-
 func main() {
   log.Print("Connecting to database")
-  databaseManager = database.Setup()
+  databaseManager := database.Setup()
 
   if !databaseManager.IsUpToDate() {
     log.Print("Sources are out of date")
     log.Print("Updating sources")
-    //data.UpdateData()
+    data.Update()
 
     log.Print("Loading data")
-    confirmedCases, recoveredCases, deathCases := data.LoadData()
+    confirmedCases, recoveredCases, deathCases := data.Load()
 
     log.Print("Uploading data into database")
     databaseManager.UploadData(confirmedCases, recoveredCases, deathCases)

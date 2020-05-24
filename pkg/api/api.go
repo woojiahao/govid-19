@@ -18,7 +18,7 @@ var endpoints = []Endpoint{
   {
     GET,
     "/countries",
-    GetCountries,
+    getCountries,
   },
   {
     GET,
@@ -28,6 +28,11 @@ var endpoints = []Endpoint{
   {
     GET,
     "/stats/general",
+    getGeneralCountryInformation,
+  },
+  {
+    GET,
+    "/stats/overview/:country_id",
     getGeneralCountryInformation,
   },
 }

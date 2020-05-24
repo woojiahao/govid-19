@@ -64,7 +64,7 @@ func (s *Series) GetValueOfDate(country, state string, date time.Time) int {
 }
 
 func getTimeSeries(seriesType TimeSeriesType) Series {
-  file, err := os.Open(TimeSeriesPaths[seriesType].AsString())
+  file, err := os.Open(string(TimeSeriesPaths[seriesType]))
   Check(err)
 
   r := csv.NewReader(file)

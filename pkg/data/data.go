@@ -5,7 +5,6 @@ import (
   . "github.com/woojiahao/govid-19/pkg/utility"
   "gopkg.in/src-d/go-git.v4"
   "os"
-  "reflect"
 )
 
 type RepoPath string
@@ -19,14 +18,9 @@ const (
   RecoveredTimeSeries          = TimeSeries + "/time_series_covid19_recovered_global.csv"
 )
 
-func (path RepoPath) AsString() string {
-  ref := reflect.ValueOf(path)
-  return ref.String()
-}
-
 // Load the repository into /tmp.
 func load() {
-  _, err := git.PlainClone(Root.AsString(), false, &git.CloneOptions{
+  _, err := git.PlainClone(string(Root), false, &git.CloneOptions{
     URL:      "https://github.com/CSSEGISandData/COVID-19.git",
     Progress: os.Stdout,
   })
@@ -35,7 +29,7 @@ func load() {
 
 // Update the repository to the latest changes.
 func update() {
-  r, err := git.PlainOpen(Root.AsString())
+  r, err := git.PlainOpen(string(Root))
   Check(err)
 
   w, err := r.Worktree()
@@ -56,9 +50,9 @@ func update() {
 
 // If the current instance already contains the repository, pull the latest changes from the repository
 // If the current instance does not contain the repository, clone the repository
-func UpdateData() {
-  if _, err := os.Stat(Root.AsString()); os.IsNotExist(err) {
-    tmp := os.Mkdir(Root.AsString(), 0755)
+func Update() {
+  if _, err := os.Stat(string(Root)); os.IsNotExist(err) {
+    tmp := os.Mkdir(string(Root), 0755)
     Check(tmp)
 
     load()
@@ -67,6 +61,6 @@ func UpdateData() {
   }
 }
 
-func LoadData() (Series, Series, Series) {
+func Load() (Series, Series, Series) {
   return getTimeSeries(Confirmed), getTimeSeries(Recovered), getTimeSeries(Deaths)
 }
