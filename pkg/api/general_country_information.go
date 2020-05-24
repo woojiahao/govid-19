@@ -11,6 +11,7 @@ import (
 type (
   gciSortCol string
   gci        struct {
+    CountryId string `json:"country_id"`
     Country   string `json:"country"`
     Confirmed int32  `json:"confirmed"`
     Recovered int32  `json:"recovered"`
@@ -60,6 +61,7 @@ func getGeneralCountryInformation(c *gin.Context) {
   }
 
   columns := []string{
+    "l.id country_id",
     "l.country",
     "sum(r.confirmed) confirmed",
     "sum(r.recovered) recovered",
@@ -70,7 +72,7 @@ func getGeneralCountryInformation(c *gin.Context) {
     Table("location l").
     Select(columns).
     Joins("inner join record r on l.id = r.location_id").
-    Group("l.country").
+    Group("l.id, l.country").
     Order(fmt.Sprintf("%s %s", string(params.Sort), string(params.Order)))
 
   var results []gci
