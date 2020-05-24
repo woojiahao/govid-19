@@ -3,7 +3,6 @@ package api
 import (
   "fmt"
   "github.com/gin-gonic/gin"
-  "strconv"
   "strings"
 )
 
@@ -14,6 +13,12 @@ type (
     Confirmed int32  `json:"confirmed"`
     Recovered int32  `json:"recovered"`
     Deaths    int32  `json:"deaths"`
+  }
+  gciQueryParams struct {
+    First int        `form:"first"`
+    Last  int        `form:"last"`
+    Sort  gciSortCol `form:"sort"`
+    Order sortOrder  `form:"order"`
   }
 )
 
@@ -41,15 +46,15 @@ func (s *gciSortCol) isValid() bool {
 // Returns the general information (non-specific) for every country in the world
 // and the relevant statistics up till that day
 func getGeneralCountryInformation(c *gin.Context) {
-  params := params(c, "first", "last", "sort", "order")
-  first, last, sort, order := params[0], params[1], gciSortCol(params[2]), sortOrder(params[3])
+  var params gciQueryParams
+  _ = c.Bind(&params)
 
-  if !sort.isValid() {
-    sort = confirmed
+  if !params.Sort.isValid() {
+    params.Sort = confirmed
   }
 
-  if !order.isValid() {
-    order = descending
+  if !params.Order.isValid() {
+    params.Order = descending
   }
 
   columns := []string{
@@ -64,15 +69,15 @@ func getGeneralCountryInformation(c *gin.Context) {
     Select(columns).
     Joins("inner join record r on l.id = r.location_id").
     Group("l.country").
-    Order(fmt.Sprintf("%s %s", string(sort), string(order)))
+    Order(fmt.Sprintf("%s %s", string(params.Sort), string(params.Order)))
 
   var results []generalCountryInformation
   query.Find(&results)
 
-  if f, err := strconv.Atoi(first); err == nil && f != 0 {
-    OK(c, results[:f])
-  } else if l, err := strconv.Atoi(last); err == nil && l != 0 {
-    OK(c, results[len(results)-l:])
+  if params.First != 0 {
+    OK(c, results[:params.First])
+  } else if params.Last != 0 {
+    OK(c, results[len(results)-params.Last:])
   } else {
     OK(c, results)
   }
