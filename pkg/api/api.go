@@ -2,27 +2,38 @@ package api
 
 import (
   "github.com/gin-gonic/gin"
+  "github.com/woojiahao/govid-19/pkg/database"
 )
+
+var databaseManager *database.Manager
 
 var endpoints = []Endpoint{
   {
-    RequestType: GET,
-    Path:        "/ping",
-    Action:      Ping,
+    GET,
+    "/ping",
+    func(c *gin.Context) {
+      OK(c, gin.H{"message": "pong"})
+    },
   },
   {
-    RequestType: GET,
-    Path:        "/all",
-    Action:      All,
+    GET,
+    "/countries",
+    GetCountries,
   },
   {
-    RequestType: GET,
-    Path:        "/countries",
-    Action:      GetAvailableCountries,
+    GET,
+    "/all",
+    All,
+  },
+  {
+    GET,
+    "/stats/general",
+    getGeneralCountryInformation,
   },
 }
 
-func Build(engine *gin.Engine) {
+func Build(engine *gin.Engine, manager *database.Manager) {
+  databaseManager = manager
   for _, endpoint := range endpoints {
     path, action := endpoint.Path, endpoint.Action
     switch endpoint.RequestType {

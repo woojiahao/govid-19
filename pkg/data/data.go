@@ -25,7 +25,7 @@ func (path RepoPath) AsString() string {
 }
 
 // Load the repository into /tmp.
-func Load() {
+func load() {
   _, err := git.PlainClone(Root.AsString(), false, &git.CloneOptions{
     URL:      "https://github.com/CSSEGISandData/COVID-19.git",
     Progress: os.Stdout,
@@ -34,7 +34,7 @@ func Load() {
 }
 
 // Update the repository to the latest changes.
-func Update() {
+func update() {
   r, err := git.PlainOpen(Root.AsString())
   Check(err)
 
@@ -54,8 +54,19 @@ func Update() {
   }
 }
 
-// Aggregate the values from the time series to create a grouping for the information.
-func GetAll() (Series, Series, Series) {
-  confirmed, deaths, recovered := GetTimeSeries(Confirmed), GetTimeSeries(Deaths), GetTimeSeries(Recovered)
-  return confirmed, deaths, recovered
+// If the current instance already contains the repository, pull the latest changes from the repository
+// If the current instance does not contain the repository, clone the repository
+func UpdateData() {
+  if _, err := os.Stat(Root.AsString()); os.IsNotExist(err) {
+    tmp := os.Mkdir(Root.AsString(), 0755)
+    Check(tmp)
+
+    load()
+  } else {
+    update()
+  }
+}
+
+func LoadData() (Series, Series, Series) {
+  return getTimeSeries(Confirmed), getTimeSeries(Recovered), getTimeSeries(Deaths)
 }

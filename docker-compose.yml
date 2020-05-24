@@ -1,9 +1,38 @@
 version: "3.7"
+
 services:
-  api: 
-    image: woojiahao/govid-19:latest
+  db:
+    image: postgres:12-alpine
+    env_file:
+      - .env
+    restart: always
+    container_name: "govid-19_db"
+    volumes:
+      - govid-19:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  adminer:
+    image: adminer
+    restart: always
+    container_name: "govid-19_adminer"
+    depends_on:
+      - db
+
+  api:
+    build:
+      context: "."
+      dockerfile: Dockerfile
+    env_file:
+      - .env
     restart: on-failure
-    container_name: "api"
+    container_name: "govid-19_api"
     ports: 
       - "8080:8080"
     network_mode: "host"
+    depends_on:
+      - adminer
+
+volumes:
+  govid-19:
+    name: "govid-19_postgresql"

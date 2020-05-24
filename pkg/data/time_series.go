@@ -2,11 +2,12 @@ package data
 
 import (
   "encoding/csv"
+  "fmt"
   . "github.com/woojiahao/govid-19/pkg/utility"
   "io"
   "os"
-  "sort"
   "strings"
+  "time"
 )
 
 var TimeSeriesPaths = map[TimeSeriesType]RepoPath{
@@ -15,8 +16,9 @@ var TimeSeriesPaths = map[TimeSeriesType]RepoPath{
   Recovered: RecoveredTimeSeries,
 }
 
+// Single day of data for a specific country/region
 type TimeSeriesRecordData struct {
-  Date  string `json:"date"`
+  Date  time.Time `json:"date"`
   Value int    `json:"value"`
 }
 
@@ -29,15 +31,6 @@ type TimeSeriesRecord struct {
   Latitude       float32                `json:"lat"`
   Total          int                    `json:"total"`
   Data           []TimeSeriesRecordData `json:"data"`
-}
-
-// Returns the sum of data for a record.
-func (r *TimeSeriesRecord) SumData() int {
-  sum := 0
-  for _, data := range r.Data {
-    sum += data.Value
-  }
-  return sum
 }
 
 type Series struct {
@@ -56,7 +49,7 @@ func (s *Series) Clone(newRecords []TimeSeriesRecord) *Series {
 func (s *Series) GetByCountry(country string) Series {
   results := make([]TimeSeriesRecord, 0)
   for _, record := range s.Records {
-    if strings.Contains(record.Country, country) {
+    if strings.ToLower(record.Country) == strings.ToLower(country) {
       results = append(results, record)
     }
   }
@@ -68,7 +61,7 @@ func (s *Series) GetByCountry(country string) Series {
 func (s *Series) GetByState(state string) Series {
   results := make([]TimeSeriesRecord, 0)
   for _, record := range s.Records {
-    if strings.Contains(record.State, state) {
+    if strings.ToLower(record.State) == strings.ToLower(state) {
       results = append(results, record)
     }
   }
@@ -76,49 +69,23 @@ func (s *Series) GetByState(state string) Series {
   return *s.Clone(results)
 }
 
-// Sorts results by the records
-func (s Series) SortRecords(order SortOrder) Series {
-  for _, record := range s.Records {
-    sort.Slice(record.Data, func(i, j int) bool {
-      switch order {
-      case Ascending:
-        return record.Data[i].Value < record.Data[j].Value
-      case Descending:
-        return record.Data[i].Value > record.Data[j].Value
-      default:
-        panic("invalid sort order")
-      }
-    })
+func (s *Series) GetValueOfDate(country, state string, date time.Time) int {
+  location := s.GetByCountry(country)
+  location = location.GetByState(state)
+  if len(location.Records) <= 0 {
+    return 0
   }
-  return s
-}
 
-// Sorts results by the total
-func (s Series) SortData(order SortOrder) Series {
-  sort.Slice(s.Records, func(i, j int) bool {
-    switch order {
-    case Ascending:
-      return s.Records[i].Total < s.Records[j].Total
-    case Descending:
-      return s.Records[i].Total > s.Records[j].Total
-    default:
-      panic("invalid sort order")
+  for _, record := range location.Records[0].Data {
+    if date == record.Date {
+      return record.Value
     }
-  })
-  return s
+  }
+
+  return -1
 }
 
-// Retrieves the first [num] (exclusive) of records in the series
-func (s Series) First(num int) Series {
-  return *s.Clone(s.Records[:num])
-}
-
-// Retrieves the last [num] (inclusive) of records in the series
-func (s Series) Last(num int) Series {
-  return *s.Clone(s.Records[len(s.Records)-num-1:])
-}
-
-func GetTimeSeries(seriesType TimeSeriesType) Series {
+func getTimeSeries(seriesType TimeSeriesType) Series {
   file, err := os.Open(TimeSeriesPaths[seriesType].AsString())
   Check(err)
 
@@ -143,9 +110,18 @@ func GetTimeSeries(seriesType TimeSeriesType) Series {
         if i != 0 {
           prev = ToInt(rawData[i-1])
         }
+
+        increment := ToInt(d) - prev
+
+        date := strings.Split(timeHeaders[i], "/")
+        month, day, year := date[0], date[1], date[2]
+        const timeLayout = "01/02/2006"
+        formattedDate, err := time.Parse(timeLayout, fmt.Sprintf("%02s/%02s/20%s", month, day, year))
+        Check(err)
+
         data = append(data, TimeSeriesRecordData{
-          Date:  timeHeaders[i],
-          Value: ToInt(d) - prev,
+          Date:  formattedDate,
+          Value: increment,
         })
       }
       timeSeriesRecord := TimeSeriesRecord{

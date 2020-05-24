@@ -2,78 +2,84 @@ package api
 
 import (
   "github.com/gin-gonic/gin"
-  "github.com/woojiahao/govid-19/pkg/data"
-  "github.com/woojiahao/govid-19/pkg/utility"
 )
 
 // TODO Test for case sensitivity in the query parameters
-// TODO Add the sum of the data returned
 func All(c *gin.Context) {
-  confirmed, deaths, recovered := data.GetAll()
+  //params := c.Request.URL.Query()
+  //country, state, sortTotal, sortRecords, first, last := params.Get("country"),
+  //  params.Get("state"),
+  //  params.Get("sort-total"),
+  //  params.Get("sort-records"),
+  //  params.Get("first"),
+  //  params.Get("last")
+  //
+  //databaseManager.QueryAllRecords(&database.AllRecordsQueryParams{
+  //
+  //})
+  //
+  //databaseResponses := make([]databaseResponse, 0)
+  //query.Find(&databaseResponses)
+  //
+  //for _, r := range databaseResponses {
+  //  fmt.Println(r)
+  //}
+  //
+  //type categoryInformation struct {
+  //  Total int
+  //  Data  map[string]int
+  //}
+  //type stateInformation struct {
+  //  Long      float32
+  //  Lat       float32
+  //  Confirmed categoryInformation
+  //  Recovered categoryInformation
+  //  Deaths    categoryInformation
+  //}
+  //data := make(map[string]map[string]stateInformation)
+  //for _, record := range databaseResponses {
+  //  if data[record.Country] == nil {
+  //    data[record.Country] = make(map[string]stateInformation)
+  //  }
+  //
+  //  data[record.Country][record.State] = stateInformation{
+  //    record.Long,
+  //    record.Lat,
+  //    categoryInformation{
+  //      Data: make(map[string]int),
+  //    },
+  //    categoryInformation{
+  //      Data: make(map[string]int),
+  //    },
+  //    categoryInformation{
+  //      Data: make(map[string]int),
+  //    },
+  //  }
+  //  confirmed := data[record.Country][record.State].Confirmed
+  //  confirmed.Data[record.Date.String()] = record.Confirmed
+  //  confirmed.Total = record.ConfirmedTotal
+  //
+  //  recovered := data[record.Country][record.State].Recovered
+  //  recovered.Data[record.Date.String()] = record.Recovered
+  //  recovered.Total = record.RecoveredTotal
+  //
+  //  deaths := data[record.Country][record.State].Deaths
+  //  deaths.Data[record.Date.String()] = record.Deaths
+  //  deaths.Total = record.DeathsTotal
+  //}
+  //
+  //OK(c, data)
 
-  params := c.Request.URL.Query()
-  country, state, first, last, sortData, sortRecords := params.Get("country"),
-    params.Get("state"),
-    params.Get("first"),
-    params.Get("last"),
-    params.Get("sort-data"),
-    params.Get("sort-records")
-
-  if country != "" {
-    confirmed, deaths, recovered = confirmed.GetByCountry(country),
-      deaths.GetByCountry(country),
-      recovered.GetByCountry(country)
-  }
-
-  if state != "" {
-    confirmed, deaths, recovered = confirmed.GetByState(state),
-      deaths.GetByState(state),
-      recovered.GetByState(state)
-  }
-
-  // TODO Experiment with passing the sorting function as a lambda/function argument to clean up the code
-  if sortData != "" {
-    order, status, errMsg := data.CheckSortOrder(sortData)
-    if !status {
-      BadRequest(c, errMsg)
-      return
-    }
-    confirmed, deaths, recovered = confirmed.SortData(order),
-      deaths.SortData(order),
-      recovered.SortData(order)
-  }
-
-  if sortRecords != "" {
-    order, status, errMsg := data.CheckSortOrder(sortRecords)
-    if !status {
-      BadRequest(c, errMsg)
-      return
-    }
-    confirmed, deaths, recovered = confirmed.SortRecords(order),
-      deaths.SortRecords(order),
-      recovered.SortRecords(order)
-  }
-
-  if first != "" {
-    num, status, errMsg := utility.CheckInt(first, "first", 0, len(confirmed.Records))
-    if !status {
-      BadRequest(c, errMsg)
-      return
-    }
-    confirmed, deaths, recovered = confirmed.First(num),
-      deaths.First(num),
-      recovered.First(num)
-  } else if last != "" {
-    num, status, errMsg := utility.CheckInt(last, "last", 0, len(confirmed.Records))
-    if !status {
-      BadRequest(c, errMsg)
-      return
-    }
-    confirmed, deaths, recovered = confirmed.Last(num),
-      deaths.Last(num),
-      recovered.Last(num)
-  }
-
-  allSeries := data.NewAllSeries(confirmed, deaths, recovered)
-  OK(c, allSeries.ToJSON())
+  //if first != "" {
+  //  query = query.Limit(first)
+  //} else if last != "" {
+  //  var count int
+  //  query.Count(&count)
+  //  fmt.Println(count)
+  //  if n, err := strconv.Atoi(last); err != nil {
+  //    query = query.Offset(count - n)
+  //  }
+  //}
+  //
+  //OK(c, databaseResponses)
 }
