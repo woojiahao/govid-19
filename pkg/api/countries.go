@@ -7,6 +7,7 @@ import (
 
 func getCountries(c *gin.Context) {
   columnNames := []string{
+    "id",
     "country",
     "state",
     "long",
@@ -23,13 +24,14 @@ func getCountries(c *gin.Context) {
   query.Find(&rawLocations)
 
   type location struct {
+    Id    uint    `json:"id"`
     State string  `json:"state,omitempty"`
     Long  float32 `json:"long"`
     Lat   float32 `json:"lat"`
   }
   locations := make(map[string][]location)
   for _, loc := range rawLocations {
-    locations[loc.Country] = append(locations[loc.Country], location{loc.State, loc.Long, loc.Lat})
+    locations[loc.Country] = append(locations[loc.Country], location{loc.ID, loc.State, loc.Long, loc.Lat})
   }
 
   OK(c, locations)

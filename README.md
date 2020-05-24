@@ -88,9 +88,10 @@ $ docker-compose up
 - [X] Compute the overall changes of the data since the data is accumulative now
 - [ ] Deployment guide
 - [X] Endpoint for country information
-- [ ] Fully migrate to use database to query data
+- [X] Fully migrate to use database to query data
 - [ ] Use middleware to handle errors thrown
 - [ ] Use bubble chart for showing most prominent countries
+- [ ] Endpoint for grouping countries that have states
 
 ## Lessons
 

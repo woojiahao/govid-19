@@ -22,18 +22,13 @@ var endpoints = []Endpoint{
   },
   {
     GET,
-    "/all",
-    All,
-  },
-  {
-    GET,
     "/stats/general",
     getGeneralCountryInformation,
   },
   {
     GET,
-    "/stats/overview/:country_id",
-    getGeneralCountryInformation,
+    "/stats/overview/:location_id",
+    getLocationOverview,
   },
 }
 
