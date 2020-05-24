@@ -6,9 +6,10 @@ import (
   "strings"
 )
 
+// General country information (gci)
 type (
-  gciSortCol                string
-  generalCountryInformation struct {
+  gciSortCol string
+  gci        struct {
     Country   string `json:"country"`
     Confirmed int32  `json:"confirmed"`
     Recovered int32  `json:"recovered"`
@@ -71,7 +72,7 @@ func getGeneralCountryInformation(c *gin.Context) {
     Group("l.country").
     Order(fmt.Sprintf("%s %s", string(params.Sort), string(params.Order)))
 
-  var results []generalCountryInformation
+  var results []gci
   query.Find(&results)
 
   if params.First != 0 {
