@@ -16,67 +16,45 @@ var TimeSeriesPaths = map[TimeSeriesType]RepoPath{
   Recovered: RecoveredTimeSeries,
 }
 
-// Single day of data for a specific country/region
-type TimeSeriesRecordData struct {
-  Date  time.Time `json:"date"`
-  Value int    `json:"value"`
-}
-
-// Single row in the time series.
-type TimeSeriesRecord struct {
-  TimeSeriesType TimeSeriesType         `json:"-"`
-  State          string                 `json:"state"`
-  Country        string                 `json:"country"`
-  Longitude      float32                `json:"long"`
-  Latitude       float32                `json:"lat"`
-  Total          int                    `json:"total"`
-  Data           []TimeSeriesRecordData `json:"data"`
-}
-
-type Series struct {
-  TimeSeriesType TimeSeriesType     `json:"-"`
-  Records        []TimeSeriesRecord `json:"records"`
-}
-
-func (s *Series) Clone(newRecords []TimeSeriesRecord) *Series {
-  return &Series{
-    TimeSeriesType: s.TimeSeriesType,
-    Records:        newRecords,
-  }
-}
-
-// TODO Case sensitive requests
-func (s *Series) GetByCountry(country string) Series {
-  results := make([]TimeSeriesRecord, 0)
-  for _, record := range s.Records {
-    if strings.ToLower(record.Country) == strings.ToLower(country) {
-      results = append(results, record)
-    }
+type (
+  // Single day of data for a specific country/region
+  TimeSeriesRecordData struct {
+    Date  time.Time `json:"date"`
+    Value int       `json:"value"`
   }
 
-  return *s.Clone(results)
-}
-
-// TODO Case sensitive requests
-func (s *Series) GetByState(state string) Series {
-  results := make([]TimeSeriesRecord, 0)
-  for _, record := range s.Records {
-    if strings.ToLower(record.State) == strings.ToLower(state) {
-      results = append(results, record)
-    }
+  // Single row in the time series.
+  TimeSeriesRecord struct {
+    TimeSeriesType TimeSeriesType         `json:"-"`
+    State          string                 `json:"state"`
+    Country        string                 `json:"country"`
+    Longitude      float32                `json:"long"`
+    Latitude       float32                `json:"lat"`
+    Total          int                    `json:"total"`
+    Data           []TimeSeriesRecordData `json:"data"`
   }
 
-  return *s.Clone(results)
-}
+  Series struct {
+    TimeSeriesType TimeSeriesType     `json:"-"`
+    Records        []TimeSeriesRecord `json:"records"`
+  }
+)
 
 func (s *Series) GetValueOfDate(country, state string, date time.Time) int {
-  location := s.GetByCountry(country)
-  location = location.GetByState(state)
-  if len(location.Records) <= 0 {
+  records := make([]TimeSeriesRecord, 0)
+  for _, record := range s.Records {
+    isCountryMatching := strings.ToLower(record.Country) == strings.ToLower(country)
+    isStateMatching := strings.ToLower(record.State) == strings.ToLower(state)
+    if isCountryMatching || isStateMatching {
+      records = append(records, record)
+    }
+  }
+
+  if len(records) <= 0 {
     return 0
   }
 
-  for _, record := range location.Records[0].Data {
+  for _, record := range records[0].Data {
     if date == record.Date {
       return record.Value
     }
