@@ -2,16 +2,10 @@ package api
 
 import (
   "github.com/gin-gonic/gin"
+  "github.com/woojiahao/govid-19/pkg/database"
 )
 
-func GetCountries(c *gin.Context) {
-  type databaseStructure struct {
-    Country string
-    State   string
-    Long    float32
-    Lat     float32
-  }
-
+func getCountries(c *gin.Context) {
   columnNames := []string{
     "country",
     "state",
@@ -25,8 +19,8 @@ func GetCountries(c *gin.Context) {
     Order("country").
     Order("state")
 
-  var databaseResponse []databaseStructure
-  query.Find(&databaseResponse)
+  var rawLocations []database.Location
+  query.Find(&rawLocations)
 
   type location struct {
     State string  `json:"state,omitempty"`
@@ -34,7 +28,7 @@ func GetCountries(c *gin.Context) {
     Lat   float32 `json:"lat"`
   }
   locations := make(map[string][]location)
-  for _, loc := range databaseResponse {
+  for _, loc := range rawLocations {
     locations[loc.Country] = append(locations[loc.Country], location{loc.State, loc.Long, loc.Lat})
   }
 
