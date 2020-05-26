@@ -3,7 +3,6 @@ package api
 import (
   "fmt"
   "github.com/gin-gonic/gin"
-  . "github.com/woojiahao/govid-19/pkg/utility"
   "strconv"
   "time"
 )
@@ -41,9 +40,21 @@ type (
   }
 )
 
+func hasLocation(locationId int) bool {
+  var results []interface{}
+  databaseManager.DB.Table("location").Where("id = ?", locationId).Find(&results)
+  return len(results) > 0
+}
+
 func getLocationOverview(c *gin.Context) {
   locationId, err := strconv.Atoi(c.Param("location_id"))
-  Check(err)
+  if err != nil {
+    panic(newError(err, 500, "location_id must be an int"))
+  }
+
+  if !hasLocation(locationId) {
+    panic(newError(nil, 404, "location_id does not match existing locations. Use /countries to get each location's id"))
+  }
 
   columns := []string{
     "location_id",

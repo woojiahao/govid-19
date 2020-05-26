@@ -13,6 +13,10 @@ import (
 func Start(databaseManager *database.Manager) {
   r := gin.Default()
 
+  // Setting up Gin error handling
+  log.Print("Setting up error handling middleware")
+  r.Use(handleError())
+
   // CORS configuration must occur before creating any API routes
   log.Print("Setting up CORS")
   r.Use(cors.New(cors.Config{
